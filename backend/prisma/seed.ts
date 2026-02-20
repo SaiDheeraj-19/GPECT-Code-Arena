@@ -25,20 +25,32 @@ async function main() {
     });
 
     const studentPass = await bcrypt.hash('Gpcet@codeATA', 10);
-    const testStudent = await prisma.user.upsert({
+    const testStudent1 = await prisma.user.upsert({
         where: { roll_number: '24ATA05269' },
         update: { password_hash: studentPass },
         create: {
-            name: 'Test Student',
+            name: 'Test Student 1',
             roll_number: '24ATA05269',
             password_hash: studentPass,
             role: Role.STUDENT,
-            must_change_password: false // For testing ease
+            must_change_password: false
+        }
+    });
+
+    const testStudent2 = await prisma.user.upsert({
+        where: { roll_number: '24ATA05063' },
+        update: { password_hash: studentPass },
+        create: {
+            name: 'Test Student 2',
+            roll_number: '24ATA05063',
+            password_hash: studentPass,
+            role: Role.STUDENT,
+            must_change_password: false
         }
     });
 
     console.log("Database seeded successfully with ADMIN user:", admin.email);
-    console.log("Database seeded successfully with TEST STUDENT:", testStudent.roll_number);
+    console.log("Database seeded successfully with TEST STUDENTS:", testStudent1.roll_number, ",", testStudent2.roll_number);
 }
 
 main()
