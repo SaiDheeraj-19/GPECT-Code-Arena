@@ -23,7 +23,7 @@ export const login = async (req: Request, res: Response) => {
         if (isRollNumber) {
             user = await prisma.user.findUnique({ where: { roll_number: identifier.toUpperCase() } });
         } else {
-            user = await prisma.user.findUnique({ where: { email: identifier } });
+            user = await prisma.user.findUnique({ where: { email: identifier.toLowerCase() } });
         }
 
         if (!user) {
@@ -136,7 +136,7 @@ export const register = async (req: Request, res: Response) => {
         const user = await prisma.user.create({
             data: {
                 name,
-                email: email || null,
+                email: email ? email.toLowerCase() : null,
                 roll_number: roll_number ? roll_number.toUpperCase() : null,
                 password_hash: hashedPassword,
                 role: determineRole,

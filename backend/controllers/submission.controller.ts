@@ -65,3 +65,24 @@ export const submitCode = async (req: Request, res: Response) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 };
+
+export const getSubmissions = async (req: Request, res: Response) => {
+    try {
+        const userId = (req as any).user.id;
+        const submissions = await prisma.submission.findMany({
+            where: { user_id: userId },
+            include: {
+                problem: {
+                    select: {
+                        title: true,
+                    }
+                }
+            },
+            orderBy: { created_at: 'desc' }
+        });
+        res.json(submissions);
+    } catch (error) {
+        console.error('Error fetching submissions:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};

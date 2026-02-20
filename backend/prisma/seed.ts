@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
-    const adminEmail = process.env.ADMIN_EMAIL || 'founder@codearena.gpcet.ac.in';
+    const adminEmail = (process.env.ADMIN_EMAIL || 'founder@codearena.gpcet.ac.in').toLowerCase();
     const adminPasswordRaw = process.env.ADMIN_PASSWORD || 'K9#xL3@vQ7!mT2$z';
     const hashedPassword = await bcrypt.hash(adminPasswordRaw, 10);
 
@@ -13,7 +13,9 @@ async function main() {
         update: {
             password_hash: hashedPassword,
             must_change_password: false,
-            role: Role.ADMIN
+            role: Role.ADMIN,
+            failed_attempts: 0,
+            locked_until: null
         },
         create: {
             email: adminEmail,
@@ -27,7 +29,11 @@ async function main() {
     const studentPass = await bcrypt.hash('Gpcet@codeATA', 10);
     const testStudent1 = await prisma.user.upsert({
         where: { roll_number: '24ATA05269' },
-        update: { password_hash: studentPass },
+        update: {
+            password_hash: studentPass,
+            failed_attempts: 0,
+            locked_until: null
+        },
         create: {
             name: 'Test Student 1',
             roll_number: '24ATA05269',
@@ -39,7 +45,11 @@ async function main() {
 
     const testStudent2 = await prisma.user.upsert({
         where: { roll_number: '24ATA05063' },
-        update: { password_hash: studentPass },
+        update: {
+            password_hash: studentPass,
+            failed_attempts: 0,
+            locked_until: null
+        },
         create: {
             name: 'Test Student 2',
             roll_number: '24ATA05063',
