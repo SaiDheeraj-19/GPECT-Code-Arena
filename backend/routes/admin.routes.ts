@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createProblem, editProblem, deleteProblem, addTestCase, getAllSubmissions, getLogs } from '../controllers/admin.controller';
+import { createProblem, editProblem, deleteProblem, addTestCase, getAllSubmissions, getLogs, getDashboardStats } from '../controllers/admin.controller';
 import { authenticateToken } from '../middleware/auth.middleware';
 import { requireAdmin } from '../middleware/role.middleware';
 
@@ -14,5 +14,6 @@ router.delete('/problems/:id', deleteProblem);
 router.post('/problems/:problemId/testcases', addTestCase);
 router.get('/submissions', getAllSubmissions);
 router.get('/logs', getLogs);
+router.get('/stats', getDashboardStats);
 
 export default router;

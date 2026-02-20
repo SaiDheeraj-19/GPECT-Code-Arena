@@ -110,3 +110,27 @@ export const getLogs = async (req: Request, res: Response) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 };
+
+export const getDashboardStats = async (req: Request, res: Response) => {
+    try {
+        const totalStudents = await prisma.user.count({ where: { role: 'STUDENT' } });
+        const problemsSolved = await prisma.submission.count({ where: { status: 'PASS' } });
+        const suspiciousEvents = await prisma.suspiciousLog.count();
+        
+        const recentLogs = await prisma.suspiciousLog.findMany({
+            include: { user: { select: { name: true, roll_number: true } } },
+            orderBy: { timestamp: 'desc' },
+            take: 4
+        });
+
+        res.json({
+            totalStudents,
+            problemsSolved,
+            suspiciousEvents,
+            recentLogs
+        });
+    } catch (error) {
+        console.error('Error fetching dashboard stats:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};

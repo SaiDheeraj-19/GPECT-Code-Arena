@@ -115,9 +115,9 @@ npm run dev
 ## 🔐 Authentication Ecosystem
 
 1. **The Founder Login:** 
-   Log in with `founder@codearena.gpcet.ac.in` and password `K9#xL3@vQ7!mT2$z` to automatically be hoisted to the Master Admin Dashboard.
+   Log in with the pre-configured admin email and secure password defined in your `.env` to automatically be hoisted to the Master Admin Dashboard.
 2. **Student Entry:** 
-   Students register and login using their unique standard identifiers (e.g. `24ATA05123`), requiring the universal first-time password (`Gpcet@codeATA`) before being forced to permanently update it.
+   Students register and login using their unique standard identifiers (e.g. `24ATA[0-9A-Z]{5}`), requiring a universal first-time setup before being forced to permanently update it.
 
 ---
 
