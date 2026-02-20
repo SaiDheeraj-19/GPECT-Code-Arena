@@ -116,7 +116,7 @@ export const register = async (req: Request, res: Response) => {
         if (roll_number) {
             const isRollNumber = /^2\dATA[0-9A-Z]{5}$/i.test(roll_number);
             if (!isRollNumber) {
-                return res.status(400).json({ error: 'Invalid Roll Number format. Example: 24ATA0512A' });
+                return res.status(400).json({ error: 'Invalid Roll Number format. Example: 24ata0512a or 24ATA0512A' });
             }
             const existingUser = await prisma.user.findUnique({ where: { roll_number: roll_number.toUpperCase() } });
             if (existingUser) return res.status(400).json({ error: 'Roll number already exists' });
