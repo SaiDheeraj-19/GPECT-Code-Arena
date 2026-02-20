@@ -5,7 +5,8 @@ const prisma = new PrismaClient();
 
 async function main() {
     const adminEmail = process.env.ADMIN_EMAIL || 'founder@codearena.gpcet.ac.in';
-    const hashedPassword = await bcrypt.hash('K9#xL3@vQ7!mT2$z', 10);
+    const adminPasswordRaw = process.env.ADMIN_PASSWORD || 'Admin@123';
+    const hashedPassword = await bcrypt.hash(adminPasswordRaw, 10);
 
     const admin = await prisma.user.upsert({
         where: { email: adminEmail },
@@ -23,7 +24,21 @@ async function main() {
         },
     });
 
+    const studentPass = await bcrypt.hash('Gpcet@codeATA', 10);
+    const testStudent = await prisma.user.upsert({
+        where: { roll_number: '24ATA05269' },
+        update: { password_hash: studentPass },
+        create: {
+            name: 'Test Student',
+            roll_number: '24ATA05269',
+            password_hash: studentPass,
+            role: Role.STUDENT,
+            must_change_password: false // For testing ease
+        }
+    });
+
     console.log("Database seeded successfully with ADMIN user:", admin.email);
+    console.log("Database seeded successfully with TEST STUDENT:", testStudent.roll_number);
 }
 
 main()

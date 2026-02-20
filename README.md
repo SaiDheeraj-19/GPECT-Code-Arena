@@ -1,5 +1,3 @@
-<div align="center">
-
 # 🚀 GPCET Code Arena 
 **The Next-Generation Sandboxed Coding Assessment Platform**
 
@@ -11,38 +9,32 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-DB-4169E1?logo=postgresql&style=for-the-badge)](https://www.postgresql.org/)
 
 <p align="center">
-  A highly secure, investor-ready coding assessment platform engineered explicitly for <b>GPCET</b>. Featuring true Docker-based code isolation, military-grade anti-cheat systems, and a devastatingly beautiful glowing UI.
+  A highly secure, proctored coding assessment platform engineered explicitly for <b>GPCET</b>. Featuring authentic Docker-based code isolation, military-grade anti-cheat telemetry, and a devastatingly beautiful high-performance UI.
 </p>
-
-</div>
 
 ---
 
-## ✨ Features That Set Us Apart
+## ✨ Core Pillars
 
-### 🛡️ Iron-Clad Anti-Cheat Engine (Student Arena)
-- **Zero-Tolerance Policy:** Automatically detects and logs suspicious activity.
-- **Strict Lockdown:** Disables `Ctrl+C`, `Ctrl+V`, `Right-Click`, and limits context menus.
-- **Tab Switching Analytics:** Flags users who blur the window or switch tabs. Exceeding 3 warnings triggers an auto-submission.
-- **Fullscreen Enforcement:** Requires test-takers to remain in fullscreen mode for the duration of the assessment.
+### 🛡️ Iron-Clad Anti-Cheat Engine
+- **Telemetry Logging:** Automatically captures and analyzes suspicious browser behavior.
+- **Proctored Lockdown:** Disables copy-paste, right-click, and restricted keyboard shortcuts.
+- **Smart-Track Warnings:** Real-time flagging for tab-switching and window blurring.
+- **Fullscreen Enforcement:** Forces student environment persistence throughout the exam.
 
-### 🐳 True Docker Sandboxing
-- **Secure Execution:** Submissions never run on the host system. They are dynamically spun up in short-lived Docker containers.
-- **Hard Quotas:** 
-  - ⏳ `2.0s` absolute Time Limit Constraint
-  - 💾 `256MB` Memory Limit 
-  - 🌐 `--network none` (Total internet blackout for the executing code to prevent external API calls)
-- **Multi-Language Support:** Instant support for `C++`, `Python 3`, and `JavaScript`.
+### 🐳 Secure Execution (Docker Sandboxing)
+- **Zero-Trust Environment:** Code executes inside transient, isolated Docker containers.
+- **Resource Guardrails:** 
+  - ⏳ `2.0s` Execution Timeout
+  - 💾 `256MB` RAM Allocation 
+  - 🌐 `--network none` (Total internet isolation)
+- **Language Support:** Optimized runtimes for `C++`, `Python 3`, and `JavaScript`.
 
-### 🥷 Role-Based Architecture
-- **Automatic Master Admin:** The founder's email gracefully triggers an internal override, turning their portal into an all-access Admin Dashboard.
-- **Student Roll Validations:** Students cannot randomly sign up; they must pass rigorous Regex identifier checks (e.g., `24ATA05123`).
-- **Dynamic JWT Filtering:** Next-level role checks ensure students can never access the hidden test cases—only the master admin can manage those.
-
-### 🎨 State-of-the-Art Aesthetic
-- **Neon-Drenched Dark Mode:** Inspired layout combining deep navy backgrounds (`#0f172a`), heavy glassmorphism, and neon-green accents (`#22c55e`).
-- **Smooth Animations:** Powered by `framer-motion` for buttery routing and modal transitions.
-- **Split-Screen Editor:** Real-time Monaco editor running alongside robust Markdown-based problem describer.
+### 🏆 Advanced Admin Dashboard
+- **Live Contest Management:** Start weekly contests, add questions dynamically, and track live leaderboards.
+- **Security Triage:** Real-time monitoring of security violations across all active sessions.
+- **Student Analytics:** View deep-dive performance metrics and submission histories.
+- **Master Reset:** High-entropy password rotation system for absolute administrative control.
 
 ---
 
@@ -50,74 +42,67 @@
 
 | Layer | Technology | Purpose |
 | --- | --- | --- |
-| **Frontend** | Next.js 14, TailwindCSS, Framer Motion | SSR, layout, glowing styling, animations |
-| **Core UI** | Shadcn UI, Monaco Editor | Unstyled premium components & VSCode-like editor |
-| **Backend** | Node.js, Express, TypeScript | RESTful API structure mapped via fast robust endpoints |
-| **Database** | PostgreSQL, Prisma ORM | Relational structures for Logs, Problems, Submissions |
-| **Engine** | Docker | Sandboxing untrusted code safely |
-| **Security** | JWT, bcrypt, Rate Limiting | Stateless authenticated sessions, salted passwords, flood prevention |
+| **Frontend** | Next.js 14, TailwindCSS, Framer Motion | SSR, layout, glassmorphic styling |
+| **Backend** | Node.js, Express, TypeScript | High-concurrency RESTful API |
+| **Database** | PostgreSQL, Prisma ORM | Relational data persistence & migrations |
+| **Engine** | Docker | Sandboxing untrusted code securely |
+| **Security** | JWT, bcrypt, Rate Limiting | Stateless auth & brute-force protection |
 
 ---
 
-## 🚀 Quick Start Guide
+## 🚀 Deployment Guide
 
-### 1. Database & Sandbox Configuration (Backend)
-Navigate to the central nervous system:
-\`\`\`bash
+### 1. Backend Configuration
+Navigate to the engine directory:
+```bash
 cd backend
-\`\`\`
+```
 
-Populate your `.env`:
-\`\`\`env
-ADMIN_EMAIL=founder@codearena.gpcet.ac.in
-DATABASE_URL="postgresql://user:password@localhost:5432/gpcet_db?schema=public"
-JWT_SECRET="YOUR_SUPER_SECRET_STRING!"
-PORT=5000
-\`\`\`
+Configure `.env`:
+```env
+ADMIN_EMAIL=your-admin@gpcet.ac.in
+ADMIN_PASSWORD=your-secure-password
+DATABASE_URL="postgresql://user:password@localhost:5432/gpcet_db"
+JWT_SECRET="generate-a-32-char-secret"
+PORT=5050
+```
 
-**CRITICAL:** Build the execution container image (required for code processing)
-\`\`\`bash
+**Build Submissions Runner:**
+```bash
 cd dockerRunner && docker build -t gpcet-runner . && cd ..
-\`\`\`
+```
 
-Generate Schema & Seed the Master Admin:
-\`\`\`bash
+**Initialize Database:**
+```bash
 npm install
-npx prisma generate
 npx prisma db push
-npm run prisma.seed
-\`\`\`
+npm run db:seed
+```
 
-Fire up the engine:
-\`\`\`bash
-npm run dev
-\`\`\`
-
-### 2. Ignition (Frontend)
-Move to the user-facing portal:
-\`\`\`bash
+### 2. Frontend Ignition
+```bash
 cd frontend
-\`\`\`
+```
 
-Feed the `.env.local`:
-\`\`\`env
-NEXT_PUBLIC_API_URL=http://localhost:5000/api
-\`\`\`
+Configure `.env.local`:
+```env
+NEXT_PUBLIC_API_URL=http://localhost:5050/api
+```
 
-Boot the arena:
-\`\`\`bash
+**Start Portal:**
+```bash
 npm install
 npm run dev
-\`\`\`
+```
 
 ---
 
 ## 🔐 Authentication Ecosystem
 
-1. **The Founder Login:** 
-   Log in with the pre-configured admin email and secure password defined in your `.env` to automatically be hoisted to the Master Admin Dashboard.
-2. **Student Entry:** 
-   Students register and login using their unique standard identifiers (e.g. `24ATA[0-9A-Z]{5}`), requiring a universal first-time setup before being forced to permanently update it.
+1. **The Founder Access:** 
+   Log in with the `ADMIN_EMAIL` and `ADMIN_PASSWORD` defined in your environment to unlock the Master Dashboard.
+2. **Student Access:** 
+   Students authenticate using institutional identifiers (e.g. `24ATA05269`). Standard initial access requires a password change for permanent security.
 
 ---
 
