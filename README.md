@@ -56,15 +56,7 @@
 Navigate to the engine directory:
 ```bash
 cd backend
-```
 
-Configure `.env`:
-```env
-ADMIN_EMAIL=your-admin@gpcet.ac.in
-ADMIN_PASSWORD=your-secure-password
-DATABASE_URL="postgresql://user:password@localhost:5432/gpcet_db"
-JWT_SECRET="generate-a-32-char-secret"
-PORT=5050
 ```
 
 **Build Submissions Runner:**
