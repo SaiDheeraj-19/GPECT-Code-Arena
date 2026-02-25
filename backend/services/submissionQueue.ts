@@ -21,10 +21,8 @@ import { broadcastLeaderboardUpdate, broadcastSubmissionUpdate } from './websock
 // Initialize Bull queue with Redis
 const REDIS_URL = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
 
-export const submissionQueue = new Bull('submission-processing', {
+export const submissionQueue = new Bull('submission-processing', REDIS_URL, {
     redis: {
-        port: 6379,
-        host: '127.0.0.1',
         maxRetriesPerRequest: 1,
         enableReadyCheck: false,
         connectTimeout: 5000,
