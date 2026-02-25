@@ -1,0 +1,97 @@
+version: '3.8'
+
+services:
+  # ── PostgreSQL Database ──
+  postgres:
+    image: postgres:16-alpine
+    container_name: gpcet-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: gpcet_admin
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-gpcet_secure_password_2026}
+      POSTGRES_DB: gpcet_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gpcet_admin -d gpcet_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - gpcet-network
+
+  # ── Redis (Submission Queue + Leaderboard Cache) ──
+  redis:
+    image: redis:7-alpine
+    container_name: gpcet-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - gpcet-network
+
+  # ── Backend API Server ──
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    container_name: gpcet-backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://gpcet_admin:${DB_PASSWORD:-gpcet_secure_password_2026}@postgres:5432/gpcet_db?schema=public
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-founder@codearena.gpcet.ac.in}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      PORT: 5050
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      NODE_ENV: production
+      PULL_DOCKER_IMAGES: "true"
+    ports:
+      - "5050:5050"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock  # Docker-in-Docker for code execution
+    networks:
+      - gpcet-network
+
+  # ── Frontend (Next.js) ──
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:5050/api}
+        NEXT_PUBLIC_WS_URL: ${NEXT_PUBLIC_WS_URL:-ws://localhost:5050/ws}
+    container_name: gpcet-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - gpcet-network
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  gpcet-network:
+    driver: bridge

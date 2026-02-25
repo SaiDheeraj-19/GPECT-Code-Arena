@@ -1,6 +1,7 @@
 /**
  * Submission Controller
  * 
+ *
  * Handles code submissions with async queue processing.
  * Supports both coding and SQL problem types with multi-language support.
  */
@@ -8,6 +9,7 @@
 import { Request, Response } from 'express';
 import prisma from '../prisma';
 import { submissionQueue, SubmissionJob, processSubmission } from '../services/submissionQueue';
+import { calculateSimilarity } from '../utils/similarity';
 import { isLanguageSupported, getLanguageConfig, LANGUAGE_CONFIGS } from '../dockerRunner/languageConfig';
 import { SubmissionStatus } from '@prisma/client';
 
@@ -76,6 +78,35 @@ export const submitCode = async (req: Request, res: Response) => {
             if (now > contest.end_time) {
                 return res.status(400).json({ error: 'Contest has ended' });
             }
+        }
+
+        // ── 1. MOSS-Lite Similarity Check (Anti-Cheat) ──
+        try {
+            const othersSubmissions = await prisma.submission.findMany({
+                where: {
+                    problem_id: problemId,
+                    status: SubmissionStatus.PASS,
+                    user_id: { not: userId }
+                },
+                take: 3,
+                orderBy: { created_at: 'desc' }
+            });
+
+            for (const otherSub of othersSubmissions) {
+                const similarity = calculateSimilarity(code, otherSub.code);
+                if (similarity > 0.85) {
+                    await prisma.suspiciousLog.create({
+                        data: {
+                            user_id: userId,
+                            reason: `High similarity (${Math.round(similarity * 100)}%) with submission ${otherSub.id} from user ${otherSub.user_id}`,
+                        }
+                    });
+                    console.warn(`[Anti-Cheat] Potential plagiarism detected for user ${userId}: ${Math.round(similarity * 100)}% match`);
+                    break;
+                }
+            }
+        } catch (err) {
+            console.error('[Anti-Cheat] Similarity check failed:', err);
         }
 
         // Create submission record with PENDING status
@@ -364,4 +395,40 @@ export const getSupportedLanguages = async (req: Request, res: Response) => {
     }));
 
     res.json(languages);
+};
+
+/**
+ * Get Global Leaderboard
+ */
+export const getGlobalLeaderboard = async (req: Request, res: Response) => {
+    try {
+        const users = await prisma.user.findMany({
+            where: {
+                role: 'STUDENT'
+            },
+            select: {
+                id: true,
+                name: true,
+                username: true,
+                roll_number: true,
+                points: true,
+                streak: true,
+                avatar_url: true,
+            },
+            orderBy: {
+                points: 'desc'
+            },
+            take: 500
+        });
+
+        const rankedUsers = users.map((user, index) => ({
+            ...user,
+            rank: index + 1
+        }));
+
+        res.json(rankedUsers);
+    } catch (error) {
+        console.error('Error fetching global leaderboard:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
 };

@@ -199,9 +199,14 @@ export const processSubmission = async (data: SubmissionJob, jobProgress?: (prog
             maxMemoryUsed
         );
 
-        // If this is a contest submission and it's Accepted, update leaderboard
-        if (contestId && finalStatus === SubmissionStatus.PASS) {
-            await updateContestLeaderboard(userId, contestId, problemId, submissionId);
+        // If it's Accepted, handle points and streaks
+        if (finalStatus === SubmissionStatus.PASS) {
+            await handlePointsAndStreaks(userId, problemId, submissionId);
+
+            // If this is a contest submission, update contest leaderboard
+            if (contestId) {
+                await updateContestLeaderboard(userId, contestId, problemId, submissionId);
+            }
         }
 
         console.log(`[Processor] Submission ${submissionId} completed: ${finalStatus}`);
@@ -366,5 +371,91 @@ submissionQueue.on('completed', (job) => {
 submissionQueue.on('stalled', (job) => {
     console.warn(`[Queue] Job ${job.id} stalled`);
 });
+
+/**
+ * Handle honor points and streaks upon successful submission
+ */
+async function handlePointsAndStreaks(userId: string, problemId: string, submissionId: string) {
+    try {
+        // 1. Check if user already solved this problem before
+        const previousSuccess = await prisma.submission.findFirst({
+            where: {
+                user_id: userId,
+                problem_id: problemId,
+                status: SubmissionStatus.PASS,
+                id: { not: submissionId }
+            }
+        });
+
+        const isFirstSolve = !previousSuccess;
+
+        // 2. Fetch User and Problem details
+        const [user, problem] = await Promise.all([
+            prisma.user.findUnique({ where: { id: userId } }),
+            prisma.problem.findUnique({ where: { id: problemId } })
+        ]);
+
+        if (!user || !problem) return;
+
+        // 3. Update Streak
+        let newStreak = user.streak || 0;
+        const now = new Date();
+        const lastLogin = user.last_login ? new Date(user.last_login) : null;
+
+        if (!lastLogin) {
+            newStreak = 1;
+        } else {
+            const diffInDays = Math.floor((now.getTime() - lastLogin.getTime()) / (1000 * 3600 * 24));
+            if (diffInDays === 1) {
+                newStreak += 1;
+            } else if (diffInDays > 1) {
+                newStreak = 1;
+            }
+        }
+
+        // 4. Calculate Points (only if first time solving)
+        if (isFirstSolve) {
+            let basePoints = 10;
+            if (problem.difficulty === 'Medium') basePoints = 20;
+            if (problem.difficulty === 'Hard') basePoints = 50;
+
+            const streakBonus = Math.floor(basePoints * Math.min(newStreak * 0.1, 1.0));
+            const totalPoints = basePoints + streakBonus;
+
+            // 5. Atomic Update: User Points + Streak
+            await prisma.user.update({
+                where: { id: userId },
+                data: {
+                    points: { increment: totalPoints },
+                    streak: newStreak,
+                    last_login: now // Use this to track daily activity
+                }
+            });
+
+            // 6. Record Activity
+            await prisma.pointActivity.create({
+                data: {
+                    user_id: userId,
+                    amount: totalPoints,
+                    reason: `Solved ${isFirstSolve ? 'new' : 'existing'} problem: ${problem.title}${streakBonus > 0 ? ` (+${streakBonus} streak bonus)` : ''}`,
+                    type: 'ADD'
+                }
+            });
+
+            console.log(`[Gamification] Awarded ${totalPoints} points to user ${userId} (Streak: ${newStreak})`);
+        } else {
+            // Just update streak/last_login if already solved
+            await prisma.user.update({
+                where: { id: userId },
+                data: {
+                    streak: newStreak,
+                    last_login: now
+                }
+            });
+        }
+    } catch (error) {
+        console.error('[Gamification] Error handling points/streaks:', error);
+    }
+}
 
 export default submissionQueue;

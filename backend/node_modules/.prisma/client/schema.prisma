@@ -18,29 +18,106 @@ model User {
   failed_attempts      Int             @default(0)
   locked_until         DateTime?
   created_at           DateTime        @default(now())
+  avatar_url           String?
+  bio                  String?
+  portfolio_url        String?
+  username             String?         @unique
+  last_login           DateTime?
+  points               Int             @default(0)
+  streak               Int             @default(0)
+  certificates         Certificate[]
+  createdContests      Contest[]       @relation("AdminContests")
+  contestResults       ContestResult[]
+  participations       Participation[]
+  pointActivities      PointActivity[]
+  createdProblems      Problem[]       @relation("ProblemCreator")
+  solutions            Solution[]
   submissions          Submission[]
   suspiciousLogs       SuspiciousLog[]
+  violations           Violation[]
+  favoriteProblems     Problem[]       @relation("UserFavorites")
+}
+
+model PointActivity {
+  id         String   @id @default(uuid())
+  user_id    String
+  amount     Int
+  reason     String
+  type       String   @default("ADD")
+  created_at DateTime @default(now())
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
 
 model Problem {
-  id          String       @id @default(uuid())
-  title       String
-  description String
-  difficulty  Difficulty
-  tags        String[]
-  created_by  String
-  created_at  DateTime     @default(now())
-  submissions Submission[]
-  testCases   TestCase[]
+  id                String       @id @default(uuid())
+  title             String
+  description       String
+  difficulty        Difficulty
+  tags              String[]
+  created_by        String
+  created_at        DateTime     @default(now())
+  allowed_languages String[]     @default(["c", "cpp", "python", "java", "javascript"])
+  memory_limit      Int          @default(256)
+  problem_type      ProblemType  @default(CODING)
+  sql_schema        String?
+  sql_seed_data     String?
+  time_limit        Int          @default(2000)
+  default_solution  String?
+  dislikes_count    Int          @default(0)
+  likes_count       Int          @default(0)
+  shares_count      Int          @default(0)
+  creator           User         @relation("ProblemCreator", fields: [created_by], references: [id])
+  solutions         Solution[]
+  submissions       Submission[]
+  testCases         TestCase[]
+  contests          Contest[]    @relation("ContestProblems")
+  favoritedBy       User[]       @relation("UserFavorites")
+}
+
+model Contest {
+  id             String          @id @default(uuid())
+  title          String
+  description    String?
+  start_time     DateTime
+  end_time       DateTime
+  created_by     String
+  created_at     DateTime        @default(now())
+  is_active      Boolean         @default(true)
+  strict_mode    Boolean         @default(false)
+  certificates   Certificate[]
+  admin          User            @relation("AdminContests", fields: [created_by], references: [id])
+  contestResults ContestResult[]
+  participations Participation[]
+  submissions    Submission[]    @relation("ContestSubmissions")
+  violations     Violation[]
+  problems       Problem[]       @relation("ContestProblems")
+}
+
+model Participation {
+  id              String   @id @default(uuid())
+  user_id         String
+  contest_id      String
+  score           Int      @default(0)
+  created_at      DateTime @default(now())
+  penalty_time    Int      @default(0)
+  solved_count    Int      @default(0)
+  disqualified    Boolean  @default(false)
+  is_flagged      Boolean  @default(false)
+  violation_count Int      @default(0)
+  contest         Contest  @relation(fields: [contest_id], references: [id])
+  user            User     @relation(fields: [user_id], references: [id])
+
+  @@unique([user_id, contest_id])
 }
 
 model TestCase {
-  id              String  @id @default(uuid())
-  problem_id      String
-  input           String
-  expected_output String
-  is_hidden       Boolean @default(false)
-  problem         Problem @relation(fields: [problem_id], references: [id], onDelete: Cascade)
+  id                   String  @id @default(uuid())
+  problem_id           String
+  input                String
+  expected_output      String
+  is_hidden            Boolean @default(false)
+  expected_result_json String?
+  problem              Problem @relation(fields: [problem_id], references: [id], onDelete: Cascade)
 }
 
 model Submission {
@@ -52,6 +129,10 @@ model Submission {
   status         SubmissionStatus @default(PENDING)
   execution_time Float?
   created_at     DateTime         @default(now())
+  contest_id     String?
+  memory_used    Float?
+  verdict        String?
+  contest        Contest?         @relation("ContestSubmissions", fields: [contest_id], references: [id])
   problem        Problem          @relation(fields: [problem_id], references: [id], onDelete: Cascade)
   user           User             @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
@@ -62,6 +143,71 @@ model SuspiciousLog {
   reason    String
   timestamp DateTime @default(now())
   user      User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model Violation {
+  id             String        @id @default(uuid())
+  user_id        String
+  contest_id     String
+  violation_type ViolationType
+  metadata       String?
+  ip_address     String?
+  user_agent     String?
+  timestamp      DateTime      @default(now())
+  contest        Contest       @relation(fields: [contest_id], references: [id], onDelete: Cascade)
+  user           User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id, contest_id])
+  @@index([contest_id, timestamp])
+}
+
+model Solution {
+  id          String   @id @default(uuid())
+  problem_id  String
+  user_id     String
+  code        String
+  language    String
+  title       String?
+  explanation String?
+  upvotes     Int      @default(0)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  problem     Problem  @relation(fields: [problem_id], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model Certificate {
+  id                String          @id @default(uuid())
+  user_id           String
+  contest_id        String
+  certificate_type  CertificateType
+  rank              Int
+  score             Int
+  certificate_url   String?
+  verification_code String          @unique
+  issued_at         DateTime        @default(now())
+  contest           Contest         @relation(fields: [contest_id], references: [id], onDelete: Cascade)
+  user              User            @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, contest_id])
+  @@index([verification_code])
+  @@index([user_id])
+}
+
+model ContestResult {
+  id              String   @id @default(uuid())
+  user_id         String
+  contest_id      String
+  rank            Int
+  problems_solved Int      @default(0)
+  penalty         Int      @default(0)
+  score           Int      @default(0)
+  finalized_at    DateTime @default(now())
+  contest         Contest  @relation(fields: [contest_id], references: [id], onDelete: Cascade)
+  user            User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, contest_id])
+  @@index([contest_id, rank])
 }
 
 enum Role {
@@ -80,4 +226,36 @@ enum SubmissionStatus {
   PASS
   FAIL
   ERROR
+  TLE
+  MLE
+  COMPILATION_ERROR
+  RUNTIME_ERROR
+}
+
+enum ProblemType {
+  CODING
+  SQL
+  WEB_DEV
+  INTERVIEW
+}
+
+enum ViolationType {
+  PASTE_ATTEMPT
+  TAB_SWITCH
+  DEVTOOLS_OPEN
+  FULLSCREEN_EXIT
+  RIGHT_CLICK
+  DRAG_DROP
+  CLIPBOARD
+  COPY_ATTEMPT
+  CUT_ATTEMPT
+  PAGE_RELOAD
+}
+
+enum CertificateType {
+  GOLD
+  SILVER
+  BRONZE
+  MERIT
+  PARTICIPATION
 }

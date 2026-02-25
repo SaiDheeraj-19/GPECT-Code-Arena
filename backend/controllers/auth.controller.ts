@@ -13,14 +13,15 @@ export const login = async (req: Request, res: Response) => {
         }
 
         // Determine if identifier is an email or roll number
-        const isRollNumber = /^2\dATA[0-9A-Z]{5}$/i.test(identifier);
+        const isEmail = identifier.includes('@');
+        const isRollNumber = /^[a-zA-Z0-9_-]{5,15}$/i.test(identifier);
 
-        if (!isRollNumber && !identifier.includes('@')) {
+        if (!isEmail && !isRollNumber) {
             return res.status(400).json({ error: 'Invalid identifier format. Must be an email or a valid roll number.' });
         }
 
         let user;
-        if (isRollNumber) {
+        if (isRollNumber && !isEmail) {
             user = await prisma.user.findUnique({ where: { roll_number: identifier.toUpperCase() } });
         } else {
             user = await prisma.user.findUnique({ where: { email: identifier.toLowerCase() } });
@@ -81,8 +82,58 @@ export const login = async (req: Request, res: Response) => {
             role = Role.ADMIN;
         }
 
+        // Logic for Daily Points and Streak
+        const now = new Date();
+        // @ts-ignore
+        const lastLogin = user.last_login ? new Date(user.last_login) : null;
+        let pointsToAdd = 0;
+        let newPoints = (user as any).points || 0;
+        let newStreak = (user as any).streak || 0;
+
+        if (!lastLogin || lastLogin.toDateString() !== now.toDateString()) {
+            pointsToAdd = 1;
+            newPoints += pointsToAdd;
+
+            // Streak logic
+            const yesterday = new Date(now);
+            yesterday.setDate(yesterday.getDate() - 1);
+
+            if (lastLogin && lastLogin.toDateString() === yesterday.toDateString()) {
+                newStreak += 1;
+            } else {
+                newStreak = 1;
+            }
+
+            // Update user and record point activity
+            user = await prisma.user.update({
+                where: { id: user.id },
+                data: {
+                    points: newPoints,
+                    streak: newStreak,
+                    last_login: now,
+                    // @ts-ignore
+                    pointActivities: {
+                        create: {
+                            amount: pointsToAdd,
+                            reason: 'Daily Login Bonus'
+                        }
+                    }
+                }
+            });
+        }
+
         const token = jwt.sign(
-            { id: user.id, email: user.email, roll_number: user.roll_number, role: user.role, must_change_password: user.must_change_password },
+            {
+                id: user.id,
+                email: user.email,
+                roll_number: user.roll_number,
+                role: user.role,
+                must_change_password: user.must_change_password,
+                // @ts-ignore
+                points: user.points,
+                // @ts-ignore
+                streak: user.streak
+            },
             process.env.JWT_SECRET || 'your_jwt_secret_here',
             { expiresIn: '1d' }
         );
@@ -95,7 +146,11 @@ export const login = async (req: Request, res: Response) => {
                 email: user.email,
                 roll_number: user.roll_number,
                 role: user.role,
-                must_change_password: user.must_change_password
+                must_change_password: user.must_change_password,
+                // @ts-ignore
+                points: user.points,
+                // @ts-ignore
+                streak: user.streak
             }
         });
 
@@ -114,9 +169,9 @@ export const register = async (req: Request, res: Response) => {
         }
 
         if (roll_number) {
-            const isRollNumber = /^2\dATA[0-9A-Z]{5}$/i.test(roll_number);
+            const isRollNumber = /^[a-zA-Z0-9_-]{5,15}$/i.test(roll_number);
             if (!isRollNumber) {
-                return res.status(400).json({ error: 'Invalid Roll Number format. Example: 24ata0512a or 24ATA0512A' });
+                return res.status(400).json({ error: 'Invalid Roll Number format.' });
             }
             const existingUser = await prisma.user.findUnique({ where: { roll_number: roll_number.toUpperCase() } });
             if (existingUser) return res.status(400).json({ error: 'Roll number already exists' });
@@ -196,6 +251,64 @@ export const resetPassword = async (req: Request, res: Response) => {
         });
     } catch (error) {
         console.error('Password reset error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+export const updateProfile = async (req: Request, res: Response) => {
+    try {
+        const userId = (req as any).user.id;
+        const { name, username, bio, portfolio_url, avatar_url } = req.body;
+
+        const updatedUser = await prisma.user.update({
+            where: { id: userId },
+            data: {
+                name: name || undefined,
+                username: username || null,
+                bio: bio || null,
+                portfolio_url: portfolio_url || null,
+                avatar_url: avatar_url || null
+            }
+        });
+
+        const token = jwt.sign(
+            {
+                id: updatedUser.id,
+                name: updatedUser.name,
+                email: updatedUser.email,
+                roll_number: updatedUser.roll_number,
+                username: updatedUser.username,
+                bio: updatedUser.bio,
+                portfolio_url: updatedUser.portfolio_url,
+                avatar_url: updatedUser.avatar_url,
+                role: updatedUser.role,
+                must_change_password: updatedUser.must_change_password
+            },
+            process.env.JWT_SECRET || 'your_jwt_secret_here',
+            { expiresIn: '1d' }
+        );
+
+        res.json({
+            message: 'Profile updated successfully',
+            token,
+            user: {
+                id: updatedUser.id,
+                name: updatedUser.name,
+                email: updatedUser.email,
+                roll_number: updatedUser.roll_number,
+                username: updatedUser.username,
+                bio: updatedUser.bio,
+                portfolio_url: updatedUser.portfolio_url,
+                avatar_url: updatedUser.avatar_url,
+                role: updatedUser.role,
+                must_change_password: updatedUser.must_change_password
+            }
+        });
+    } catch (error: any) {
+        if (error.code === 'P2002') {
+            return res.status(400).json({ error: 'Username already taken' });
+        }
+        console.error('Profile update error:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 };
