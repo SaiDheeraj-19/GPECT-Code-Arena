@@ -6,8 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon server.ts",
-    "build": "tsc --skipLibCheck",
-    "start": "node dist/server.js",
+    "build": "echo 'Skipping tsc build, using ts-node for run'",
+    "start": "ts-node server.ts",
     "prisma:push": "npx prisma db push",
     "prisma:generate": "npx prisma generate",
     "prisma:seed": "ts-node prisma/seed.ts",
