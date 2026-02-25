@@ -35,7 +35,7 @@ export function OnboardingModal() {
 
             if (res.ok) {
                 const data = await res.json();
-                login(data.user, data.token);
+                login(data.token, data.user);
                 // Page will automatically re-render and hide modal because user.is_profile_complete = true
                 window.location.reload(); // Hard reload just to be sure states are fresh
             } else {

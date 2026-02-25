@@ -60,7 +60,7 @@ export default function SettingsPage() {
             });
             if (res.ok) {
                 const data = await res.json();
-                login(data.user, data.token);
+                login(data.token, data.user);
                 setSuccess(true);
                 setTimeout(() => setSuccess(false), 3000);
             } else {
