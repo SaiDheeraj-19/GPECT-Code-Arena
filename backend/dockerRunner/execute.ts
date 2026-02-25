@@ -124,6 +124,11 @@ export const executeCode = async (
             exitCode = err.code || 1;
             resultOutput = err.stdout || '';
             resultError = err.stderr || err.message || '';
+            // Clean up node exec paths from user view
+            if (resultError.includes('Command failed:')) {
+                const lines = resultError.split('\n');
+                resultError = lines.slice(1).join('\n').trim();
+            }
         }
 
         const executionTime = Date.now() - startTime;

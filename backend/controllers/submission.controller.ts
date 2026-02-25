@@ -11,6 +11,8 @@ import prisma from '../prisma';
 import { submissionQueue, SubmissionJob, processSubmission } from '../services/submissionQueue';
 import { calculateSimilarity } from '../utils/similarity';
 import { isLanguageSupported, getLanguageConfig, LANGUAGE_CONFIGS } from '../dockerRunner/languageConfig';
+import { executeCode } from '../dockerRunner/execute';
+import { executeSQLProblem } from '../dockerRunner/sqlExecutor';
 import { SubmissionStatus } from '@prisma/client';
 
 /**
@@ -159,6 +161,110 @@ export const submitCode = async (req: Request, res: Response) => {
 };
 
 /**
+ * Run code against the first test case instantly
+ * POST /api/submissions/run
+ */
+export const runCode = async (req: Request, res: Response) => {
+    try {
+        const { problemId, code, language, input: customInput } = req.body;
+
+        if (!problemId || !code || !language) {
+            return res.status(400).json({ error: 'Missing required fields: problemId, code, language' });
+        }
+
+        if (!isLanguageSupported(language)) {
+            return res.status(400).json({ error: `Unsupported language: ${language}` });
+        }
+
+        const problem = await prisma.problem.findUnique({
+            where: { id: problemId },
+            include: { testCases: { take: 1 } }
+        });
+
+        if (!problem) {
+            return res.status(404).json({ error: 'Problem not found' });
+        }
+
+        let inputToUse = customInput;
+        let expectedOutput = '';
+
+        if (!inputToUse && problem.testCases && problem.testCases.length > 0) {
+            inputToUse = problem.testCases[0].input;
+            expectedOutput = problem.testCases[0].expected_output;
+        }
+
+        inputToUse = inputToUse || '';
+
+        // Handle SQL
+        if (problem.problem_type === 'SQL') {
+            if (language !== 'sql') {
+                return res.status(400).json({ error: 'SQL problems only accept SQL submissions' });
+            }
+
+            let expectedJson: any[] = [];
+            const rawExpected = problem.testCases[0]?.expected_result_json;
+            if (typeof rawExpected === 'string') {
+                try { expectedJson = JSON.parse(rawExpected); } catch (e) { }
+            } else if (Array.isArray(rawExpected)) {
+                expectedJson = rawExpected;
+            }
+
+            const sqlResult = await executeSQLProblem(
+                code,
+                problem.sql_schema || '',
+                inputToUse,
+                JSON.stringify(expectedJson),
+                problem.time_limit
+            );
+
+            return res.json({
+                status: sqlResult.verdict === 'WRONG_ANSWER' ? 'FAIL' : (sqlResult.verdict === 'SUCCESS' ? 'PASS' : sqlResult.verdict),
+                execution_time: sqlResult.executionTime / 1000,
+                error: sqlResult.error,
+                output: JSON.stringify(sqlResult.resultJson, null, 2),
+                expected: JSON.stringify(expectedJson, null, 2)
+            });
+        }
+
+        // Handle normal code
+        const result = await executeCode(
+            code,
+            language,
+            inputToUse,
+            problem.time_limit,
+            problem.memory_limit
+        );
+
+        let status = result.verdict === 'SUCCESS' ? 'COMPLETE' : result.verdict;
+
+        // simple string compare if SUCCESS
+        if (status === 'COMPLETE' && expectedOutput) {
+            const outStr = result.output.trim();
+            const expStr = expectedOutput.trim();
+            if (outStr === expStr) {
+                status = 'PASS';
+            } else {
+                status = 'FAIL';
+            }
+        }
+
+        res.json({
+            status,
+            execution_time: result.executionTime / 1000,
+            memory_used: result.memoryUsed,
+            error: result.error,
+            output: result.output,
+            expected: expectedOutput
+        });
+
+    } catch (error) {
+        console.error('Run Code error:', error);
+        res.status(500).json({ error: 'Internal server error while executing' });
+    }
+};
+
+/**
+
  * Get submission status/result
  * GET /api/submissions/:id
  */

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { submitCode, getSubmissions, getSubmissionById, getAnalytics, getSupportedLanguages, getGlobalLeaderboard } from '../controllers/submission.controller';
+import { submitCode, getSubmissions, getSubmissionById, getAnalytics, getSupportedLanguages, getGlobalLeaderboard, runCode } from '../controllers/submission.controller';
 import { authenticateToken } from '../middleware/auth.middleware';
 
 const router = Router();
@@ -13,6 +13,7 @@ router.get('/languages', getSupportedLanguages);
 router.get('/analytics', getAnalytics);
 
 // Submissions
+router.post('/run', runCode);
 router.post('/', submitCode);
 router.get('/', getSubmissions);
 router.get('/:id', getSubmissionById);

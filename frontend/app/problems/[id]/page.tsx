@@ -70,7 +70,7 @@ export default function ProblemSolvePage() {
     const [mySubmissions, setMySubmissions] = useState<any[]>([]);
     const [solutions, setSolutions] = useState<any[]>([]);
     const [pollingId, setPollingId] = useState<string | null>(null);
-    const [onlineCount, _setOnlineCount] = useState(Math.floor(Math.random() * 50) + 10);
+    const [runningCode, setRunningCode] = useState(false);
 
     const [newSolution, setNewSolution] = useState({ title: "", explanation: "", code: "" });
     const [showSolutionForm, setShowSolutionForm] = useState(false);
@@ -176,7 +176,7 @@ export default function ProblemSolvePage() {
     }, [pollingId, fetchMySubmissions]);
 
     const submitCode = async () => {
-        if (submitting) return;
+        if (submitting || runningCode) return;
         setSubmitting(true);
         setConsoleOpen(true);
         setResult(null);
@@ -187,10 +187,29 @@ export default function ProblemSolvePage() {
                 language: language
             });
             setPollingId(data.id);
-            setResult({ status: 'PENDING', id: data.id });
+            setResult({ status: 'PENDING', id: data.id, message: "Queued for submission..." });
         } catch (e: any) {
             setResult({ status: 'ERROR', error: e.response?.data?.error || 'System error' });
             setSubmitting(false);
+        }
+    };
+
+    const runCodeOption = async () => {
+        if (submitting || runningCode) return;
+        setRunningCode(true);
+        setConsoleOpen(true);
+        setResult({ status: 'PENDING', message: "Executing instantly..." });
+        try {
+            const { data } = await api.post('/submissions/run', {
+                problemId: id,
+                code: code,
+                language: language
+            });
+            setResult(data);
+        } catch (e: any) {
+            setResult({ status: 'ERROR', error: e.response?.data?.error || 'Execution failed' });
+        } finally {
+            setRunningCode(false);
         }
     };
 
@@ -261,10 +280,10 @@ export default function ProblemSolvePage() {
                             </div>
                             <h1 className="font-black text-sm tracking-tighter hidden md:block uppercase">Arena <span className="text-amber-500">v2</span></h1>
                         </div>
-                        <div className="h-4 w-px bg-white/10"></div>
+                        <div className="h-4 w-px bg-white/10 dark:block hidden"></div>
                         <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-slate-500 bg-white/5 px-3 py-1.5 rounded-full border border-white/5">
                             <span className="size-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
-                            {onlineCount} Users Online
+                            Online
                         </div>
                     </div>
 
@@ -275,8 +294,16 @@ export default function ProblemSolvePage() {
                         </div>
                         <div className="flex items-center gap-2">
                             <button
+                                onClick={runCodeOption}
+                                disabled={submitting || runningCode}
+                                className="flex items-center gap-2 bg-slate-800 text-slate-300 hover:text-white px-5 py-2 rounded-xl border border-white/10 text-[10px] font-black uppercase tracking-widest shadow-lg hover:bg-slate-700 transition-all disabled:opacity-50"
+                            >
+                                {runningCode ? <RotateCcw size={14} className="animate-spin" /> : <Play size={14} className="text-emerald-500" />}
+                                {runningCode ? 'Running' : 'Run '}
+                            </button>
+                            <button
                                 onClick={submitCode}
-                                disabled={submitting}
+                                disabled={submitting || runningCode}
                                 className="flex items-center gap-2 bg-amber-500 text-black px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-amber-500/20 hover:scale-105 transition-all disabled:opacity-50"
                             >
                                 {submitting ? <RotateCcw size={14} className="animate-spin" /> : <CloudUpload size={14} />}
@@ -561,7 +588,7 @@ export default function ProblemSolvePage() {
                                     </div>
                                     <div className="flex-1 p-6 overflow-y-auto custom-scrollbar font-mono text-xs">
                                         {result.status === 'PENDING' ? (
-                                            <div className="flex items-center gap-4 text-slate-400"><RotateCcw size={16} className="animate-spin text-amber-500" /><span className="uppercase tracking-widest font-black">Executing against test cases...</span></div>
+                                            <div className="flex items-center gap-4 text-slate-400"><RotateCcw size={16} className="animate-spin text-amber-500" /><span className="uppercase tracking-widest font-black">{result.message || 'Executing against test cases...'}</span></div>
                                         ) : result.status === 'PASS' ? (
                                             <div className="space-y-6">
                                                 <div className="flex items-center gap-3 text-emerald-500"><CheckCircle2 size={24} /><div className="text-xl font-black uppercase tracking-tighter">Perfect! All Tests Passed</div></div>
@@ -579,9 +606,26 @@ export default function ProblemSolvePage() {
                                         ) : (
                                             <div className="space-y-6">
                                                 <div className="flex items-center gap-3 text-red-500"><AlertCircle size={24} /><div className="text-xl font-black uppercase tracking-tighter">{statusConfig[result.status]?.label || 'Error Found'}</div></div>
-                                                <div className="bg-red-500/5 border border-red-500/10 p-6 rounded-3xl space-y-3">
-                                                    <div className="text-[10px] font-black uppercase text-red-400">Compiler Diagnostics</div>
-                                                    <pre className="text-red-200/80 whitespace-pre-wrap leading-relaxed">{result.verdict || result.error || 'Logic mismatch detected.'}</pre>
+                                                <div className="bg-[#1a1a1c] border border-white/5 p-4 rounded-2xl space-y-3">
+                                                    <div className="text-[10px] font-black uppercase text-amber-400">Diagnostic Details</div>
+                                                    <pre className="text-slate-300 whitespace-pre-wrap leading-relaxed">
+                                                        {result.verdict || result.error || 'Logic mismatch detected.'}
+
+                                                        {result.output && (
+                                                            <>
+                                                                <br /><br />
+                                                                <span className="text-xs text-slate-500">--- Output ---</span><br />
+                                                                {result.output}
+                                                            </>
+                                                        )}
+                                                        {result.expected && result.status === 'FAIL' && (
+                                                            <>
+                                                                <br /><br />
+                                                                <span className="text-xs text-slate-500">--- Expected ---</span><br />
+                                                                {result.expected}
+                                                            </>
+                                                        )}
+                                                    </pre>
                                                 </div>
                                             </div>
                                         )}
