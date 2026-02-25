@@ -22,6 +22,7 @@ export default function CreateProblemPremium() {
     const router = useRouter();
     const [saving, setSaving] = useState(false);
     const [activeTab, setActiveTab] = useState<'description' | 'testcases' | 'solution'>('description');
+    const [previewMode, setPreviewMode] = useState(false);
 
     const [problem, setProblem] = useState({
         title: "",
@@ -221,23 +222,35 @@ export default function CreateProblemPremium() {
                                             <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] transition-colors">Markdown Pro Editor</span>
                                         </div>
                                         <div className="flex gap-4">
-                                            {['bold', 'italic', 'code', 'image', 'link'].map(tool => (
-                                                <button key={tool} className="text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors uppercase text-[9px] font-black">{tool}</button>
-                                            ))}
+                                            <button
+                                                onClick={() => setPreviewMode(!previewMode)}
+                                                className={`px-3 py-1 rounded-md text-[10px] font-black uppercase tracking-widest transition-all ${previewMode ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-white/5'}`}
+                                            >
+                                                {previewMode ? 'Editor' : 'Preview'}
+                                            </button>
                                         </div>
                                     </div>
-                                    <textarea
-                                        value={problem.description}
-                                        onChange={e => setProblem({ ...problem, description: e.target.value })}
-                                        className="flex-1 p-10 font-mono text-sm leading-relaxed focus:outline-none resize-none bg-transparent placeholder:text-slate-200 dark:placeholder:text-slate-800 text-slate-900 dark:text-white transition-colors"
-                                        placeholder="## Problem Title
-                                        
+                                    {previewMode ? (
+                                        <div className="flex-1 p-10 overflow-y-auto prose dark:prose-invert max-w-none prose-sm font-sans">
+                                            <div className="p-10 border rounded-3xl bg-slate-50/50 dark:bg-white/5 border-slate-100 dark:border-white/10 shadow-sm">
+                                                <h1 className="text-3xl font-black mb-6 text-slate-900 dark:text-white">{problem.title || "Untitled Challenge"}</h1>
+                                                <div className="markdown-content text-slate-700 dark:text-slate-300 leading-relaxed" dangerouslySetInnerHTML={{ __html: (problem.description || "No description provided.").replace(/\n/g, '<br/>') }} />
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <textarea
+                                            value={problem.description}
+                                            onChange={e => setProblem({ ...problem, description: e.target.value })}
+                                            className="flex-1 p-10 font-mono text-sm leading-relaxed focus:outline-none resize-none bg-transparent placeholder:text-slate-200 dark:placeholder:text-slate-800 text-slate-900 dark:text-white transition-colors"
+                                            placeholder="## Problem Title
+                                            
 Describe the problem here using Markdown...
 
 ### Example 1:
 Input: x = 1
 Output: 2"
-                                    />
+                                        />
+                                    )}
                                 </>
                             )}
 
@@ -345,7 +358,10 @@ Output: 2"
 
                     {/* Bottom Floating Bar */}
                     <div className="absolute bottom-10 right-10 flex items-center gap-4 bg-white/60 dark:bg-[#0a0a0b]/60 backdrop-blur-md p-2 rounded-full border border-slate-200/60 dark:border-white/10 shadow-xl transition-colors">
-                        <button className="h-12 px-8 rounded-full text-slate-500 dark:text-slate-400 font-bold text-sm hover:bg-slate-100 dark:hover:bg-white/5 transition-all flex items-center gap-2">
+                        <button
+                            onClick={() => alert("Please 'Publish' the challenge first to view the live student preview. Use the 'Preview' toggle in the Description tab for a quick look!")}
+                            className="h-12 px-8 rounded-full text-slate-500 dark:text-slate-400 font-bold text-sm hover:bg-slate-100 dark:hover:bg-white/5 transition-all flex items-center gap-2"
+                        >
                             <Eye size={18} />
                             Preview
                         </button>

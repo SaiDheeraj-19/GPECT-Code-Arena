@@ -214,13 +214,15 @@ export default function AdminProblems() {
                                     </button>
                                 </td>
                                 <td className="py-4 px-6 text-right space-x-2 flex justify-end items-center">
-                                    <button
-                                        onClick={() => window.open(`/problems/${prob.id}`, '_blank')}
+                                    <a
+                                        href={`/problems/${prob.id}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
                                         className="p-1.5 rounded-lg text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors"
                                         title="Preview Problem"
                                     >
                                         <Eye size={16} />
-                                    </button>
+                                    </a>
                                     <button
                                         onClick={() => router.push(`/admin/problems/edit?id=${prob.id}`)}
                                         className="text-xs font-bold text-primary hover:text-primary/80 bg-primary/10 px-3 py-1.5 rounded-lg transition-colors"

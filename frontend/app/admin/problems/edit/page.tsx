@@ -26,6 +26,7 @@ function EditProblemContent() {
     const [saving, setSaving] = useState(false);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'description' | 'testcases' | 'solution'>('description');
+    const [previewMode, setPreviewMode] = useState(false);
 
     const [problem, setProblem] = useState({
         title: "",
@@ -232,11 +233,37 @@ function EditProblemContent() {
                     <div className="flex-1 px-12 py-10 overflow-hidden flex flex-col">
                         <div className="flex-1 bg-white dark:bg-[#0a0a0b] rounded-[2.5rem] border border-slate-200/60 dark:border-white/10 shadow-2xl overflow-hidden flex flex-col transition-colors">
                             {activeTab === 'description' && (
-                                <textarea
-                                    value={problem.description}
-                                    onChange={e => setProblem({ ...problem, description: e.target.value })}
-                                    className="flex-1 p-10 font-mono text-sm leading-relaxed focus:outline-none resize-none bg-transparent text-slate-900 dark:text-white transition-colors"
-                                />
+                                <>
+                                    <div className="h-12 border-b border-slate-100 dark:border-white/10 bg-slate-50/30 dark:bg-white/5 px-8 flex items-center justify-end transition-colors">
+                                        <button
+                                            onClick={() => setPreviewMode(!previewMode)}
+                                            className={`px-3 py-1 rounded-md text-[10px] font-black uppercase tracking-widest transition-all ${previewMode ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 bg-slate-100 dark:bg-white/5'}`}
+                                        >
+                                            {previewMode ? 'Editor' : 'Preview'}
+                                        </button>
+                                    </div>
+                                    {previewMode ? (
+                                        <div className="flex-1 p-10 overflow-y-auto prose dark:prose-invert max-w-none prose-sm">
+                                            <div className="p-10 border rounded-3xl bg-slate-50/50 dark:bg-white/5 border-slate-100 dark:border-white/10">
+                                                <h1 className="text-3xl font-black mb-6">{problem.title}</h1>
+                                                <div className="markdown-content" dangerouslySetInnerHTML={{ __html: problem.description.replace(/\n/g, '<br/>') }} />
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <textarea
+                                            value={problem.description}
+                                            onChange={e => setProblem({ ...problem, description: e.target.value })}
+                                            className="flex-1 p-10 font-mono text-sm leading-relaxed focus:outline-none resize-none bg-transparent placeholder:text-slate-200 dark:placeholder:text-slate-800 text-slate-900 dark:text-white transition-colors"
+                                            placeholder="## Problem Title
+                                            
+Describe the problem here using Markdown...
+
+### Example 1:
+Input: x = 1
+Output: 2"
+                                        />
+                                    )}
+                                </>
                             )}
 
                             {activeTab === 'testcases' && (
@@ -343,13 +370,15 @@ function EditProblemContent() {
 
                     {/* Bottom Floating Bar */}
                     <div className="absolute bottom-10 right-10 flex items-center gap-4 bg-white/60 dark:bg-[#0a0a0b]/60 backdrop-blur-md p-2 rounded-full border border-slate-200/60 dark:border-white/10 shadow-xl transition-colors">
-                        <button
-                            onClick={() => window.open(`/problems/${problemId}`, '_blank')}
-                            className="h-12 px-8 rounded-full text-slate-500 dark:text-slate-400 font-bold text-sm hover:bg-slate-100 dark:hover:bg-white/5 transition-all flex items-center gap-2"
+                        <a
+                            href={`/problems/${problemId}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="h-12 px-8 rounded-full text-slate-500 dark:text-slate-400 font-bold text-sm hover:bg-slate-100 dark:hover:bg-white/5 transition-all flex items-center gap-2 border border-transparent hover:border-slate-200/60 dark:hover:border-white/10"
                         >
                             <Eye size={18} />
                             Preview
-                        </button>
+                        </a>
                         <button
                             onClick={handleSave}
                             disabled={saving}
