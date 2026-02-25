@@ -1,0 +1,12 @@
+{
+    "watch": [
+        "."
+    ],
+    "ext": "ts,json",
+    "ignore": [
+        "dockerRunner/jobs/*",
+        "node_modules",
+        ".git"
+    ],
+    "exec": "ts-node server.ts"
+}
