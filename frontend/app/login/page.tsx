@@ -128,38 +128,29 @@ export default function LoginPage() {
                             </div>
                         </div>
 
-                        <AnimatePresence>
-                            {(identifier.includes('@') || identifier === '') && (
-                                <motion.div
-                                    initial={{ height: 0, opacity: 0 }}
-                                    animate={{ height: "auto", opacity: 1 }}
-                                    exit={{ height: 0, opacity: 0 }}
-                                    className="space-y-2 overflow-hidden"
+                        <div className="space-y-2">
+                            <label className="block text-[10px] font-bold tracking-widest text-slate-500 dark:text-slate-400 uppercase">Passkey</label>
+                            <div className="relative group/input">
+                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none group-focus-within/input:text-primary text-slate-400 dark:text-slate-500 transition-colors">
+                                    <Lock size={18} />
+                                </div>
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    placeholder="••••••••"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="w-full bg-slate-100/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl pl-12 pr-12 py-3.5 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary focus:bg-white dark:focus:bg-white/10 transition-all shadow-inner dark:shadow-none placeholder:text-slate-400 dark:placeholder:text-slate-500 font-mono tracking-wider"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-white transition-colors"
                                 >
-                                    <label className="block text-[10px] font-bold tracking-widest text-slate-500 dark:text-slate-400 uppercase">Passkey</label>
-                                    <div className="relative group/input">
-                                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none group-focus-within/input:text-primary text-slate-400 dark:text-slate-500 transition-colors">
-                                            <Lock size={18} />
-                                        </div>
-                                        <input
-                                            type={showPassword ? "text" : "password"}
-                                            required={identifier.includes('@')}
-                                            placeholder="••••••••"
-                                            value={password}
-                                            onChange={(e) => setPassword(e.target.value)}
-                                            className="w-full bg-slate-100/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl pl-12 pr-12 py-3.5 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary focus:bg-white dark:focus:bg-white/10 transition-all shadow-inner dark:shadow-none placeholder:text-slate-400 dark:placeholder:text-slate-500 font-mono tracking-wider"
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowPassword(!showPassword)}
-                                            className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-white transition-colors"
-                                        >
-                                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                                        </button>
-                                    </div>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
+                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                </button>
+                            </div>
+                            <p className="text-[9px] text-slate-400 dark:text-slate-500 font-medium">New students: Leave blank for first login.</p>
+                        </div>
 
                         <div className="flex items-center justify-between !mt-4">
                             <label className="flex items-center gap-2 cursor-pointer group/check">

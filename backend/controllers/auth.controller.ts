@@ -53,24 +53,44 @@ export const login = async (req: Request, res: Response) => {
                 });
             }
         }
-        // --- STUDENT LOGIN FLOW (PASSWORDLESS + AUTO-CREATE) ---
+        // --- STUDENT LOGIN FLOW (SECURE AUTO-CREATE) ---
         else if (isStudentRoll) {
             const rollNumber = identifier.toUpperCase();
             user = await prisma.user.findUnique({ where: { roll_number: rollNumber } });
 
             if (!user) {
-                const defaultHash = await bcrypt.hash('AutoRegister@123', 10);
+                // First time: Create with a random temp hash and force immediate password setup
+                const tempPassword = `TEMP_${Math.random().toString(36).substring(7)}`;
+                const tempHash = await bcrypt.hash(tempPassword, 10);
                 user = await prisma.user.create({
                     data: {
                         name: 'Coder',
                         roll_number: rollNumber,
-                        password_hash: defaultHash,
+                        password_hash: tempHash,
                         role: Role.STUDENT,
-                        must_change_password: false,
+                        must_change_password: true, // Force the student to set a secure password immediately
                         // @ts-ignore
                         is_profile_complete: false
                     }
                 });
+            } else {
+                // Existing student: We MUST verify the password to keep accounts safe
+                // Compatibility layer: If they haven't set a password yet (matching the old default)
+                // we allow them in one last time (even without a password) but force a password reset
+                const isMatch = await bcrypt.compare(password || '', user.password_hash);
+                const isOldDefaultMatch = await bcrypt.compare('AutoRegister@123', user.password_hash);
+
+                if (!isMatch && !isOldDefaultMatch) {
+                    return res.status(401).json({ error: 'Incorrect password for this student account.' });
+                }
+
+                // If they are using the old default, force them to upgrade security
+                if (isOldDefaultMatch) {
+                    user = await prisma.user.update({
+                        where: { id: user.id },
+                        data: { must_change_password: true }
+                    });
+                }
             }
         }
 
