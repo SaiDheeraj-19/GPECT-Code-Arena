@@ -6,6 +6,7 @@ import { Zap, Trophy, ShieldCheck, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Navbar } from "../components/Navbar";
 import { Footer } from "../components/Footer";
+import Image from "next/image";
 
 export default function LandingPage() {
     const router = useRouter();
@@ -29,7 +30,26 @@ export default function LandingPage() {
             <Navbar />
 
             {/* Hero Section */}
-            <section className="pt-40 pb-20 px-6 flex flex-col items-center justify-center text-center relative z-10 max-w-4xl mx-auto">
+            <section className="pt-32 pb-20 px-6 flex flex-col items-center justify-center text-center relative z-10 max-w-4xl mx-auto">
+
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    transition={{ duration: 0.6, ease: "easeOut" }}
+                    className="mb-10 relative flex items-center justify-center"
+                >
+                    <div className="bg-white px-8 py-6 rounded-[2.5rem] shadow-2xl dark:shadow-[0_0_50px_rgba(255,255,255,0.05)] border border-slate-100 dark:border-white/10 group hover:shadow-primary/20 dark:hover:shadow-primary/10 transition-shadow duration-500">
+                        <div className="relative w-[280px] md:w-[360px] h-[120px] md:h-[160px] group-hover:scale-[1.02] transition-transform duration-500">
+                            <Image
+                                src="/gpcet-codearena-logo.png"
+                                alt="GPCET CodeArena Logo"
+                                fill
+                                className="object-contain"
+                                priority
+                            />
+                        </div>
+                    </div>
+                </motion.div>
                 <motion.h1
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
