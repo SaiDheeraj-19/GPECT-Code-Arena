@@ -124,7 +124,6 @@ export function OnboardingModal() {
                                 <option value="MECH">MECH</option>
                                 <option value="CIVIL">CIVIL</option>
                                 <option value="AI">AI</option>
-                                <option value="DS">DS</option>
                             </select>
                         </div>
                         <div className="space-y-1">

@@ -102,7 +102,6 @@ export default function AdminStudentsDirectory() {
                     <option value="MECH">MECH</option>
                     <option value="CIVIL">CIVIL</option>
                     <option value="AI">AI</option>
-                    <option value="DS">DS</option>
                 </select>
             </div>
 
