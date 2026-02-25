@@ -65,6 +65,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         }
     },
     initialize: async () => {
+        if (useAuthStore.getState().initialized) return;
         const token = localStorage.getItem('token');
         if (token) {
             try {

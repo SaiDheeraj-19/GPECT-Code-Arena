@@ -11,11 +11,11 @@ import { useAuthStore } from "../store/auth";
 
 export default function LandingPage() {
     const router = useRouter();
-    const { user } = useAuthStore();
+    const { user, initialized } = useAuthStore();
     const [animationKey, setAnimationKey] = useState(0);
 
     useEffect(() => {
-        if (user) {
+        if (initialized && user) {
             router.push('/profile');
         }
 
@@ -23,7 +23,7 @@ export default function LandingPage() {
             setAnimationKey(prev => prev + 1);
         }, 4000); // Replay timelapse loop every 4 seconds
         return () => clearInterval(interval);
-    }, [user, router]);
+    }, [user, initialized, router]);
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-[#0a0a0b] text-slate-900 dark:text-slate-100 font-display selection:bg-primary selection:text-white dark:selection:text-background-dark overflow-x-hidden transition-colors duration-500">

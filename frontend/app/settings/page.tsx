@@ -9,7 +9,7 @@ import { Navbar } from "../../components/Navbar";
 
 export default function SettingsPage() {
     const router = useRouter();
-    const { user, login, logout } = useAuthStore();
+    const { user, login, logout, initialized } = useAuthStore();
     const [activeTab, setActiveTab] = useState("Account");
 
     const [publicRanking, setPublicRanking] = useState(true);
@@ -28,6 +28,8 @@ export default function SettingsPage() {
     });
 
     useEffect(() => {
+        if (!initialized) return;
+
         if (!user) {
             router.push('/login');
         } else {
@@ -39,7 +41,7 @@ export default function SettingsPage() {
                 avatar_url: user.avatar_url || ""
             });
         }
-    }, [user, router]);
+    }, [user, initialized, router]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });

@@ -1,7 +1,7 @@
 /* eslint-disable */
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "../../store/auth";
 import api from "../../lib/api";
@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 
 export default function ProfilePage() {
-    const { user, refresh } = useAuthStore();
+    const { user, refresh, initialized } = useAuthStore();
     const router = useRouter();
 
     const [stats, setStats] = useState({ totalSolved: 0, easy: 0, medium: 0, hard: 0 });
@@ -34,13 +34,20 @@ export default function ProfilePage() {
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'monthly' | 'all'>('all');
 
+    const hasFetched = useRef(false);
+
     useEffect(() => {
-        if (!user) {
+        if (initialized && !user) {
             router.push('/');
-            return;
         }
-        fetchProfileData();
-    }, [user, router]);
+    }, [initialized, user, router]);
+
+    useEffect(() => {
+        if (initialized && user && !hasFetched.current) {
+            fetchProfileData();
+            hasFetched.current = true;
+        }
+    }, [initialized, user]);
 
     const fetchProfileData = async () => {
         try {
@@ -74,12 +81,13 @@ export default function ProfilePage() {
         }
     };
 
-    if (loading) {
+    if (!initialized || loading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-[#0a0a0b]">
-                <div className="relative">
+                <div className="relative flex flex-col items-center gap-4">
                     <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
                     <Zap className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-primary animate-pulse" size={20} />
+                    {!initialized && <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/50 animate-pulse mt-8">Deciphering identity...</p>}
                 </div>
             </div>
         );

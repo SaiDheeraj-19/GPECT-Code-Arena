@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import api from "../../lib/api";
 import { useAuthStore } from "../../store/auth";
@@ -33,7 +33,7 @@ interface Problem {
 }
 
 export default function StudentDashboard() {
-    const user = useAuthStore(state => state.user);
+    const { user, initialized } = useAuthStore();
     const router = useRouter();
 
     const [problems, setProblems] = useState<Problem[]>([]);
@@ -41,13 +41,29 @@ export default function StudentDashboard() {
     const [searchQuery, setSearchQuery] = useState("");
     const [activeType, setActiveType] = useState<string>('ALL');
 
+    const hasFetched = useRef(false);
+
     useEffect(() => {
-        if (!user) {
+        if (initialized && !user) {
             router.push('/');
-            return;
         }
-        fetchData();
-    }, [user, router]);
+    }, [initialized, user, router]);
+
+    useEffect(() => {
+        if (initialized && user && !hasFetched.current) {
+            fetchData();
+            hasFetched.current = true;
+        }
+    }, [initialized, user]);
+
+    if (!initialized) {
+        return (
+            <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
+                <div className="size-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground animate-pulse">Syncing Secure Workspace...</p>
+            </div>
+        );
+    }
 
     const fetchData = async () => {
         try {
