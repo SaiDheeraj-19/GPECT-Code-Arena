@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Zap, Target, Award } from "lucide-react";
+import { Zap, Target, User as UserIcon } from "lucide-react";
 import { Navbar } from "../../components/Navbar";
 import { Footer } from "../../components/Footer";
 import Image from "next/image";
@@ -110,9 +110,9 @@ export default function LeaderboardPage() {
                                         className="grid grid-cols-[60px_1fr_120px_100px] md:grid-cols-[100px_1fr_180px_140px] px-8 py-6 items-center hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-all group"
                                     >
                                         <div className={`font-black text-2xl md:text-3xl tracking-tighter ${user.rank === 1 ? 'text-amber-500' :
-                                                user.rank === 2 ? 'text-slate-400' :
-                                                    user.rank === 3 ? 'text-orange-500' :
-                                                        'text-slate-300 dark:text-slate-800'
+                                            user.rank === 2 ? 'text-slate-400' :
+                                                user.rank === 3 ? 'text-orange-500' :
+                                                    'text-slate-300 dark:text-slate-800'
                                             }`}>
                                             #{user.rank}
                                         </div>
@@ -123,7 +123,7 @@ export default function LeaderboardPage() {
                                                     <Image src={user.avatar_url} alt="" fill className="object-cover" />
                                                 ) : (
                                                     <div className="w-full h-full bg-slate-200 dark:bg-white/5 flex items-center justify-center text-slate-500">
-                                                        <Award size={20} />
+                                                        <UserIcon size={20} />
                                                     </div>
                                                 )}
                                             </div>

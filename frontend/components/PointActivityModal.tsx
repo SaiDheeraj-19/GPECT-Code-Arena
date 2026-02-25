@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Flame, Plus, History } from "lucide-react";
+import { X, Flame, History } from "lucide-react";
 import { useEffect, useState } from "react";
 import api from "../lib/api";
 
@@ -82,8 +82,8 @@ export function PointActivityModal({ isOpen, onClose }: { isOpen: boolean, onClo
                                                     <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-0.5">{new Date(activity.created_at).toLocaleDateString()}</p>
                                                 </div>
                                             </div>
-                                            <div className="size-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <Plus size={14} />
+                                            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500">
+                                                <span className="text-[8px] font-black uppercase tracking-widest">Claimed</span>
                                             </div>
                                         </div>
                                     ))}
