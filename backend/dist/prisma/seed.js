@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -15,34 +6,77 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const client_1 = require("@prisma/client");
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const prisma = new client_1.PrismaClient();
-function main() {
-    return __awaiter(this, void 0, void 0, function* () {
-        const adminEmail = process.env.ADMIN_EMAIL || 'founder@codearena.gpcet.ac.in';
-        const hashedPassword = yield bcryptjs_1.default.hash('K9#xL3@vQ7!mT2$z', 10);
-        const admin = yield prisma.user.upsert({
-            where: { email: adminEmail },
-            update: {
-                password_hash: hashedPassword,
-                must_change_password: false,
-                role: client_1.Role.ADMIN
-            },
-            create: {
-                email: adminEmail,
-                name: 'Arena Admin',
-                password_hash: hashedPassword,
-                role: client_1.Role.ADMIN,
-                must_change_password: false
-            },
-        });
-        console.log("Database seeded successfully with ADMIN user:", admin.email);
+async function main() {
+    const adminEmail = (process.env.ADMIN_EMAIL || 'founder@codearena.gpcet.ac.in').toLowerCase();
+    const adminPasswordRaw = process.env.ADMIN_PASSWORD || 'K9#xL3@vQ7!mT2$z';
+    const hashedPassword = await bcryptjs_1.default.hash(adminPasswordRaw, 10);
+    const admin = await prisma.user.upsert({
+        where: { email: adminEmail },
+        update: {
+            password_hash: hashedPassword,
+            must_change_password: false,
+            role: client_1.Role.ADMIN,
+            failed_attempts: 0,
+            locked_until: null
+        },
+        create: {
+            email: adminEmail,
+            name: 'Arena Admin',
+            password_hash: hashedPassword,
+            role: client_1.Role.ADMIN,
+            must_change_password: false
+        },
     });
+    // Note: Test Students 24ATA05269 and 24ATA05063 have been permanently removed for production readiness.
+    // Add some sample problems
+    await prisma.problem.upsert({
+        where: { id: 'interview-1' },
+        update: {},
+        create: {
+            id: 'interview-1',
+            title: 'Two Sum Elite',
+            description: 'Determine if two numbers sum to target in an array representing an infinite stream.',
+            difficulty: 'Easy',
+            // @ts-ignore
+            problem_type: 'INTERVIEW',
+            tags: ['Array', 'Hashing', 'Google'],
+            allowed_languages: ['python', 'javascript', 'cpp'],
+            created_by: admin.id,
+            testCases: {
+                create: [
+                    { input: '[2,7,11,15]\n9', expected_output: '[0,1]' }
+                ]
+            }
+        }
+    });
+    await prisma.problem.upsert({
+        where: { id: 'interview-2' },
+        update: {},
+        create: {
+            id: 'interview-2',
+            title: 'Reverse Linked List Optimized',
+            description: 'Reverse a linked list using constant extra space.',
+            difficulty: 'Medium',
+            // @ts-ignore
+            problem_type: 'INTERVIEW',
+            tags: ['Linked List', 'Amazon'],
+            allowed_languages: ['python', 'cpp', 'java'],
+            created_by: admin.id,
+            testCases: {
+                create: [
+                    { input: '[1,2,3,4,5]', expected_output: '[5,4,3,2,1]' }
+                ]
+            }
+        }
+    });
+    console.log("Database seeded successfully with ADMIN user:", admin.email);
 }
 main()
-    .then(() => __awaiter(void 0, void 0, void 0, function* () {
-    yield prisma.$disconnect();
-}))
-    .catch((e) => __awaiter(void 0, void 0, void 0, function* () {
+    .then(async () => {
+    await prisma.$disconnect();
+})
+    .catch(async (e) => {
     console.error(e);
-    yield prisma.$disconnect();
+    await prisma.$disconnect();
     process.exit(1);
-}));
+});
