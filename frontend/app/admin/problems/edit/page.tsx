@@ -33,9 +33,13 @@ function EditProblemContent() {
         difficulty: "Easy",
         tags: "",
         default_solution: "",
+        official_solutions: {} as Record<string, string>,
         is_interview: false,
         testCases: [{ input: "", expected_output: "", is_hidden: false }]
     });
+
+    const [selectedLanguage, setSelectedLanguage] = useState("python");
+    const languages = ["python", "javascript", "java", "cpp", "c"];
 
     const fetchProblem = useCallback(async () => {
         try {
@@ -47,6 +51,7 @@ function EditProblemContent() {
                 difficulty: data.difficulty || "Easy",
                 tags: Array.isArray(data.tags) ? data.tags.join(', ') : "",
                 default_solution: data.default_solution || "",
+                official_solutions: data.official_solutions || {},
                 is_interview: data.is_interview || false,
                 testCases: data.testCases && data.testCases.length > 0
                     ? data.testCases.map((tc: { input: string; expected_output: string; is_hidden: boolean }) => ({
@@ -250,6 +255,19 @@ function EditProblemContent() {
                                                     <X size={16} />
                                                 </button>
                                             </div>
+                                            <div className="flex items-center gap-2 mb-2 px-2">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={tc.is_hidden}
+                                                    onChange={e => {
+                                                        const testCases = [...problem.testCases];
+                                                        testCases[i].is_hidden = e.target.checked;
+                                                        setProblem({ ...problem, testCases });
+                                                    }}
+                                                    className="size-4 rounded border-slate-200 dark:border-white/10 text-amber-500 focus:ring-amber-500/20"
+                                                />
+                                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Hidden Test Case</span>
+                                            </div>
                                             <div className="grid grid-cols-2 gap-6">
                                                 <div className="space-y-3">
                                                     <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-2 transition-colors">Input Data</label>
@@ -288,12 +306,37 @@ function EditProblemContent() {
                             )}
 
                             {activeTab === 'solution' && (
-                                <textarea
-                                    value={problem.default_solution}
-                                    onChange={e => setProblem({ ...problem, default_solution: e.target.value })}
-                                    className="flex-1 p-10 font-mono text-sm leading-relaxed focus:outline-none resize-none bg-transparent text-slate-900 dark:text-white transition-colors"
-                                    placeholder="// Enter the reference solution here..."
-                                />
+                                <>
+                                    <div className="h-12 border-b border-slate-100 dark:border-white/10 bg-slate-50/30 dark:bg-white/5 px-8 flex items-center justify-between transition-colors">
+                                        <div className="flex items-center gap-3">
+                                            <Terminal size={14} className="text-amber-500 transition-colors" />
+                                            <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] transition-colors">Reference Implementation</span>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            {languages.map(lang => (
+                                                <button
+                                                    key={lang}
+                                                    onClick={() => setSelectedLanguage(lang)}
+                                                    className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${selectedLanguage === lang
+                                                        ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20'
+                                                        : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 bg-slate-100 dark:bg-white/5'}`}
+                                                >
+                                                    {lang}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <textarea
+                                        value={problem.official_solutions[selectedLanguage] || ""}
+                                        onChange={e => {
+                                            const official_solutions = { ...problem.official_solutions, [selectedLanguage]: e.target.value };
+                                            setProblem({ ...problem, official_solutions, default_solution: e.target.value });
+                                        }}
+                                        className="flex-1 p-10 font-mono text-sm leading-relaxed focus:outline-none resize-none bg-transparent placeholder:text-slate-200 dark:placeholder:text-slate-800 text-slate-900 dark:text-white transition-colors"
+                                        placeholder={`// Enter the ${selectedLanguage} solution here...
+// This will be shown to students after they solve the problem.`}
+                                    />
+                                </>
                             )}
                         </div>
                     </div>
@@ -318,7 +361,7 @@ function EditProblemContent() {
                     </div>
                 </section>
             </main>
-        </div>
+        </div >
     );
 }
 

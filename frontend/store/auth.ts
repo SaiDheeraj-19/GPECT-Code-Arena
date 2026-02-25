@@ -30,11 +30,13 @@ export interface AuthState {
     logout: () => void;
     initialize: () => Promise<void>;
     refresh: () => Promise<void>;
+    initialized: boolean;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
     user: null,
     token: null,
+    initialized: false,
     login: (token, user) => {
         localStorage.setItem('token', token);
         set({ token, user });
@@ -81,5 +83,6 @@ export const useAuthStore = create<AuthState>((set) => ({
                 }
             }
         }
+        set({ initialized: true });
     }
 }));

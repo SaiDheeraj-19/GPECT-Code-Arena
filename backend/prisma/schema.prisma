@@ -68,6 +68,7 @@ model Problem {
   sql_seed_data     String?
   time_limit        Int          @default(2000)
   default_solution  String?
+  official_solutions Json?
   dislikes_count    Int          @default(0)
   likes_count       Int          @default(0)
   shares_count      Int          @default(0)

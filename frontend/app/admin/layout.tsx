@@ -24,13 +24,27 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const router = useRouter();
     const pathname = usePathname();
     const user = useAuthStore((state) => state.user);
+    const initialized = useAuthStore((state) => state.initialized);
     const logout = useAuthStore((state) => state.logout);
 
     useEffect(() => {
-        if (!user || user.role !== 'ADMIN') {
+        if (initialized && (!user || user.role !== 'ADMIN')) {
             router.push('/');
         }
-    }, [user, router]);
+    }, [user, initialized, router]);
+
+    if (!initialized) {
+        return (
+            <div className="min-h-screen bg-[#0F172A] flex items-center justify-center">
+                <div className="flex flex-col items-center gap-4">
+                    <Box className="text-white animate-bounce" size={40} />
+                    <div className="h-1 w-32 bg-white/10 rounded-full overflow-hidden">
+                        <div className="h-full bg-white animate-[loading_1.5s_ease-in-out_infinite]" style={{ width: '30%' }}></div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     if (!user || user.role !== 'ADMIN') return null;
 
