@@ -157,22 +157,58 @@ export default function ProblemSolvePage() {
 
     useEffect(() => {
         if (!pollingId) return;
-        const interval = setInterval(async () => {
+
+        // Automatically use current host, swap HTTP protocol for WS protocol
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = process.env.NEXT_PUBLIC_API_URL
+            ? process.env.NEXT_PUBLIC_API_URL.replace('http:', 'ws:').replace('https:', 'wss:') + '/ws'
+            : `${protocol}//${window.location.host}/ws`;
+
+        const ws = new WebSocket(wsUrl);
+
+        ws.onopen = () => {
+            ws.send(JSON.stringify({ type: 'watch_submission', submissionId: pollingId }));
+        };
+
+        ws.onmessage = async (event) => {
             try {
-                const { data } = await api.get(`/submissions/${pollingId}`);
-                if (data.status !== 'PENDING') {
-                    setResult(data);
-                    setPollingId(null);
-                    setSubmitting(false);
-                    setConsoleOpen(true);
-                    clearInterval(interval);
-                    fetchMySubmissions();
+                const data = JSON.parse(event.data);
+                if (data.type === 'submission_update' && data.submissionId === pollingId) {
+                    if (data.status !== 'PENDING') {
+                        // The engine has finished running the code. Fetch full diagnostic result
+                        const res = await api.get(`/submissions/${pollingId}`);
+                        setResult(res.data);
+                        setPollingId(null);
+                        setSubmitting(false);
+                        setConsoleOpen(true);
+                        fetchMySubmissions();
+                        ws.close();
+                    }
                 }
-            } catch (e) {
-                console.error('Polling error:', e);
+            } catch (e) { }
+        };
+
+        // Fallback cleanup + timeout (just in case the WS drops)
+        const timeout = setTimeout(async () => {
+            if (pollingId) {
+                try {
+                    const { data } = await api.get(`/submissions/${pollingId}`);
+                    if (data.status !== 'PENDING') {
+                        setResult(data);
+                        setPollingId(null);
+                        setSubmitting(false);
+                        fetchMySubmissions();
+                    }
+                } catch (e) { }
             }
-        }, 1500);
-        return () => clearInterval(interval);
+        }, 15000);
+
+        return () => {
+            clearTimeout(timeout);
+            if (ws.readyState === WebSocket.OPEN) {
+                ws.close();
+            }
+        };
     }, [pollingId, fetchMySubmissions]);
 
     const submitCode = async () => {
@@ -270,9 +306,9 @@ export default function ProblemSolvePage() {
             strictMode={!!contestId}
             enabled={!!contestId}
         >
-            <div className="dark bg-[#0a0a0b] text-slate-100 h-screen overflow-hidden flex flex-col font-sans selection:bg-amber-500 selection:text-black">
+            <div className="bg-slate-50 dark:bg-[#0a0a0b] text-slate-900 dark:text-slate-100 h-screen overflow-hidden flex flex-col font-sans selection:bg-amber-500 selection:text-black transition-colors duration-500">
                 {/* Header */}
-                <header className="h-14 border-b border-white/5 flex items-center justify-between px-6 bg-[#0a0a0b]/80 backdrop-blur-xl z-50 shrink-0">
+                <header className="h-14 border-b border-slate-200 dark:border-white/5 flex items-center justify-between px-6 bg-white/80 dark:bg-[#0a0a0b]/80 backdrop-blur-xl z-50 shrink-0">
                     <div className="flex items-center gap-6">
                         <div className="flex items-center gap-2 cursor-pointer" onClick={() => router.push('/problems')}>
                             <div className="size-7 bg-amber-500 rounded flex items-center justify-center shadow-lg shadow-amber-500/20">

@@ -44,7 +44,7 @@ if (!fs.existsSync(JOBS_DIR)) {
  * Pull Docker images for all supported languages
  */
 export const pullDockerImages = async (): Promise<void> => {
-    console.log("[Docker] Running locally without docker");
+    console.log("[Docker] Images should be pulled natively: docker pull node:18-alpine, python:3.10-alpine, gcc:12");
 };
 
 /**
