@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 
 export default function ProfilePage() {
-    const { user } = useAuthStore();
+    const { user, refresh } = useAuthStore();
     const router = useRouter();
 
     const [stats, setStats] = useState({ totalSolved: 0, easy: 0, medium: 0, hard: 0 });
@@ -47,7 +47,8 @@ export default function ProfilePage() {
             setLoading(true);
             const [problemsRes, certsRes] = await Promise.all([
                 api.get('/problems'),
-                api.get('/certificates/my').catch(() => ({ data: [] }))
+                api.get('/certificates/my').catch(() => ({ data: [] })),
+                refresh().catch(() => null)
             ]);
 
             const allProblems = problemsRes.data || [];

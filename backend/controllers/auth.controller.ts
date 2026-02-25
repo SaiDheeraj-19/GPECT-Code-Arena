@@ -118,87 +118,95 @@ export const login = async (req: Request, res: Response) => {
             role = Role.ADMIN;
         }
 
-        // Logic for Daily Points and Streak
-        const now = new Date();
-        // @ts-ignore
-        const lastLogin = user.last_login ? new Date(user.last_login) : null;
-        let pointsToAdd = 0;
-        let newPoints = (user as any).points || 0;
-        let newStreak = (user as any).streak || 0;
+        // Handle daily bonus and streak
+        user = await handleDailyBonus(user);
 
-        if (!lastLogin || lastLogin.toDateString() !== now.toDateString()) {
-            pointsToAdd = 1;
-            newPoints += pointsToAdd;
+        // Generate token with COMPLETE profile info
+        const tokenData = getUserTokenData(user);
+        const token = jwt.sign(tokenData, process.env.JWT_SECRET || 'your_jwt_secret_here', { expiresIn: '1d' });
 
-            // Streak logic
-            const yesterday = new Date(now);
-            yesterday.setDate(yesterday.getDate() - 1);
-
-            if (lastLogin && lastLogin.toDateString() === yesterday.toDateString()) {
-                newStreak += 1;
-            } else {
-                newStreak = 1;
-            }
-
-            // Update user and record point activity
-            user = await prisma.user.update({
-                where: { id: user.id },
-                data: {
-                    points: newPoints,
-                    streak: newStreak,
-                    last_login: now,
-                    // @ts-ignore
-                    pointActivities: {
-                        create: {
-                            amount: pointsToAdd,
-                            reason: 'Daily Login Bonus'
-                        }
-                    }
-                }
-            });
-        }
-
-        // Generate token with COMPLETE profile info so it persists across logouts
-        const tokenData = {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            roll_number: user.roll_number,
-            username: user.username,
-            bio: user.bio,
-            portfolio_url: user.portfolio_url,
-            avatar_url: user.avatar_url,
-            role: user.role,
-            must_change_password: user.must_change_password,
-            // @ts-ignore
-            is_profile_complete: user.is_profile_complete,
-            // @ts-ignore
-            points: user.points,
-            // @ts-ignore
-            streak: user.streak,
-            // @ts-ignore
-            year: user.year,
-            // @ts-ignore
-            semester: user.semester,
-            // @ts-ignore
-            branch: user.branch,
-            // @ts-ignore
-            section: user.section
-        };
-
-        const token = jwt.sign(
-            tokenData,
-            process.env.JWT_SECRET || 'your_jwt_secret_here',
-            { expiresIn: '1d' }
-        );
-
-        res.json({
-            token,
-            user: tokenData
-        });
+        res.json({ token, user: tokenData });
 
     } catch (error) {
         console.error('Login error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+const handleDailyBonus = async (user: any) => {
+    const now = new Date();
+    const lastLogin = user.last_login ? new Date(user.last_login) : null;
+    let pointsToAdd = 0;
+    let newPoints = user.points || 0;
+    let newStreak = user.streak || 0;
+
+    if (!lastLogin || lastLogin.toDateString() !== now.toDateString()) {
+        pointsToAdd = 1;
+        newPoints += pointsToAdd;
+
+        const yesterday = new Date(now);
+        yesterday.setDate(yesterday.getDate() - 1);
+
+        if (lastLogin && lastLogin.toDateString() === yesterday.toDateString()) {
+            newStreak += 1;
+        } else {
+            newStreak = 1;
+        }
+
+        return await prisma.user.update({
+            where: { id: user.id },
+            data: {
+                points: newPoints,
+                streak: newStreak,
+                last_login: now,
+                pointActivities: {
+                    create: {
+                        amount: pointsToAdd,
+                        reason: 'Daily Login Bonus'
+                    }
+                }
+            }
+        });
+    }
+    return user;
+};
+
+const getUserTokenData = (user: any) => ({
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    roll_number: user.roll_number,
+    username: user.username,
+    bio: user.bio,
+    portfolio_url: user.portfolio_url,
+    avatar_url: user.avatar_url,
+    role: user.role,
+    must_change_password: user.must_change_password,
+    is_profile_complete: user.is_profile_complete,
+    points: user.points,
+    streak: user.streak,
+    year: user.year,
+    semester: user.semester,
+    branch: user.branch,
+    section: user.section
+});
+
+export const getMe = async (req: Request, res: Response) => {
+    try {
+        const userId = (req as any).user.id;
+        let user = await prisma.user.findUnique({ where: { id: userId } });
+
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        // Check/Award daily bonus whenever they "check in" (initialize frontend)
+        user = await handleDailyBonus(user);
+
+        const tokenData = getUserTokenData(user);
+        const token = jwt.sign(tokenData, process.env.JWT_SECRET || 'your_jwt_secret_here', { expiresIn: '1d' });
+
+        res.json({ token, user: tokenData });
+    } catch (error) {
+        console.error('getMe error:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 };

@@ -55,7 +55,7 @@ export default function ProblemSolvePage() {
     const { id } = useParams() as { id: string };
     const searchParams = useSearchParams();
     const contestId = searchParams.get('contestId') || undefined;
-    const user = useAuthStore(state => state.user);
+    const { user, refresh } = useAuthStore();
     const router = useRouter();
 
     const [problem, setProblem] = useState<any>(null);
@@ -183,6 +183,12 @@ export default function ProblemSolvePage() {
                         setSubmitting(false);
                         setConsoleOpen(true);
                         fetchMySubmissions();
+
+                        // If it passed, refresh user HP/Streak
+                        if (res.data.status === 'PASS') {
+                            refresh();
+                        }
+
                         ws.close();
                     }
                 }

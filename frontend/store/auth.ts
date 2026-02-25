@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { jwtDecode } from 'jwt-decode';
+import axios from 'axios';
 
 export interface User {
     id: string;
@@ -15,6 +16,10 @@ export interface User {
     points?: number;
     streak?: number;
     is_profile_complete?: boolean;
+    year?: number;
+    semester?: number;
+    branch?: string;
+    section?: string;
 }
 
 export interface AuthState {
@@ -23,7 +28,8 @@ export interface AuthState {
     login: (token: string, user: User) => void;
     updateUser: (user: User) => void;
     logout: () => void;
-    initialize: () => void;
+    initialize: () => Promise<void>;
+    refresh: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -40,15 +46,39 @@ export const useAuthStore = create<AuthState>((set) => ({
         localStorage.removeItem('token');
         set({ token: null, user: null });
     },
-    initialize: () => {
+    refresh: async () => {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        try {
+            const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5050/api';
+            const { data } = await axios.get(`${API_URL}/auth/me`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (data.token && data.user) {
+                localStorage.setItem('token', data.token);
+                set({ token: data.token, user: data.user });
+            }
+        } catch (e) {
+            console.error('Refresh failed:', e);
+        }
+    },
+    initialize: async () => {
         const token = localStorage.getItem('token');
         if (token) {
             try {
+                // Set initial decoded data immediately
                 const decoded = jwtDecode<User>(token);
                 set({ token, user: decoded });
-            } catch {
-                localStorage.removeItem('token');
-                set({ token: null, user: null });
+
+                // Fetch fresh user data from server to reflect latest HP/Streak
+                const authState = useAuthStore.getState();
+                await authState.refresh();
+            } catch (error) {
+                console.error('Auth init error:', error);
+                if (axios.isAxiosError(error) && (error.response?.status === 401 || error.response?.status === 403)) {
+                    localStorage.removeItem('token');
+                    set({ token: null, user: null });
+                }
             }
         }
     }
