@@ -13,7 +13,7 @@ const submissionLimiter = rateLimit({
     max: 10,
     message: { error: 'Too many submissions. Please wait a minute.' },
     keyGenerator: (req) => {
-        return (req as any).user?.id || req.ip;
+        return (req as any).user.id;
     }
 });
 

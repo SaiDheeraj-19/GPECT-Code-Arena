@@ -1,7 +1,8 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useState, useEffect } from "react";
-import { User, Shield, Sliders, Bell, CreditCard, LogOut, Camera, Github, Linkedin, Loader2, Check } from "lucide-react";
+import { User, Shield, Sliders, Bell, CreditCard, LogOut, Camera, Loader2, Check } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "../../store/auth";
 
@@ -259,43 +260,7 @@ export default function SettingsPage() {
 
                         <hr className="border-white/5 my-8" />
 
-                        {/* Social Connections */}
-                        <h3 className="text-xl font-bold mb-6">Social Connections</h3>
-                        <div className="space-y-4 mb-12">
-                            {/* Github */}
-                            <div className="flex items-center justify-between p-4 rounded-2xl border border-white/5 bg-white/[0.02]">
-                                <div className="flex items-center gap-4">
-                                    <div className="size-10 bg-[#24292e] text-white rounded-xl flex items-center justify-center border border-white/10">
-                                        <Github size={20} />
-                                    </div>
-                                    <div>
-                                        <div className="font-bold text-sm">GitHub</div>
-                                        <div className="text-xs text-slate-500">Connected as @alexchen_dev</div>
-                                    </div>
-                                </div>
-                                <button className="text-[10px] font-bold tracking-widest text-amber-500 hover:text-amber-400 uppercase transition-colors">
-                                    Revoke
-                                </button>
-                            </div>
-
-                            {/* LinkedIn */}
-                            <div className="flex items-center justify-between p-4 rounded-2xl border border-white/5 bg-white/[0.02]">
-                                <div className="flex items-center gap-4">
-                                    <div className="size-10 bg-[#0077b5] text-white rounded-xl flex items-center justify-center border border-white/10">
-                                        <Linkedin size={20} />
-                                    </div>
-                                    <div>
-                                        <div className="font-bold text-sm">LinkedIn</div>
-                                        <div className="text-xs text-slate-500">Not connected</div>
-                                    </div>
-                                </div>
-                                <button className="text-[10px] font-bold tracking-widest text-primary hover:text-primary/80 uppercase transition-colors">
-                                    Connect
-                                </button>
-                            </div>
-                        </div>
-
-                        <hr className="border-white/5 my-8" />
+                        {/* Removed Social Connections block as it contained fake data */}
 
                         {/* Experience Preferences */}
                         <h3 className="text-xl font-bold mb-6">Experience Preferences</h3>

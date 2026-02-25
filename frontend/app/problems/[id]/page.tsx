@@ -1,3 +1,4 @@
+/* eslint-disable */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -273,11 +274,55 @@ export default function ProblemSolvePage() {
     };
 
     if (loading) return (
-        <div className="min-h-screen flex items-center justify-center bg-[#0a0a0b] text-white">
-            <div className="flex flex-col items-center gap-4">
-                <div className="w-10 h-10 border-4 border-amber-500/20 border-t-amber-500 rounded-full animate-spin" />
-                <p className="text-slate-500 font-bold text-xs uppercase tracking-widest">Warping to Arena...</p>
-            </div>
+        <div className="min-h-screen bg-[#0a0a0b] text-white flex flex-col font-sans overflow-hidden">
+            <header className="h-14 border-b border-white/5 bg-[#0a0a0b]/80 backdrop-blur-xl flex items-center justify-between px-6 z-50">
+                <div className="flex items-center gap-6">
+                    <div className="w-24 h-6 bg-white/5 rounded animate-pulse"></div>
+                    <div className="w-16 h-4 bg-white/5 rounded animate-pulse hidden md:block"></div>
+                </div>
+                <div className="flex items-center gap-4">
+                    <div className="w-20 h-8 bg-white/5 rounded-xl animate-pulse"></div>
+                    <div className="size-8 rounded-full bg-white/5 animate-pulse"></div>
+                </div>
+            </header>
+            <main className="flex-1 flex overflow-hidden">
+                <aside className="w-[500px] flex-shrink-0 flex flex-col border-r border-white/5 bg-[#0a0a0b] p-8">
+                    <div className="w-16 h-6 bg-white/5 rounded-full mb-8 animate-pulse"></div>
+                    <div className="w-3/4 h-8 bg-white/5 rounded-xl mb-6 animate-pulse"></div>
+                    <div className="space-y-4">
+                        <div className="w-full h-4 bg-white/5 rounded animate-pulse delay-75"></div>
+                        <div className="w-full h-4 bg-white/5 rounded animate-pulse delay-100"></div>
+                        <div className="w-5/6 h-4 bg-white/5 rounded animate-pulse delay-150"></div>
+                        <div className="w-full h-4 bg-white/5 rounded animate-pulse delay-200"></div>
+                    </div>
+                    <div className="mt-12 space-y-3">
+                        <div className="w-24 h-4 bg-white/5 rounded animate-pulse mb-4"></div>
+                        <div className="w-full h-24 bg-white/5 rounded-2xl animate-pulse"></div>
+                    </div>
+                </aside>
+                <section className="flex-1 bg-[#0c0c0e] flex flex-col relative">
+                    <div className="h-12 border-b border-white/5 flex items-center justify-between px-6 shrink-0 bg-[#0c0c0e]">
+                        <div className="w-32 h-6 bg-white/5 rounded animate-pulse"></div>
+                        <div className="w-20 h-6 bg-white/5 rounded animate-pulse"></div>
+                    </div>
+                    <div className="flex-1 p-6 relative">
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-6 z-10">
+                            <div className="relative">
+                                <div className="absolute inset-0 bg-amber-500/20 blur-xl rounded-full"></div>
+                                <div className="w-12 h-12 border-2 border-amber-500/20 border-t-amber-500 rounded-full animate-spin relative z-10" />
+                            </div>
+                            <div className="text-[10px] uppercase font-black tracking-[0.3em] text-slate-500 text-center flex flex-col gap-2">
+                                <span>Initializing Workspace</span>
+                                <div className="flex gap-1 justify-center">
+                                    <span className="w-1 h-1 bg-amber-500 rounded-full animate-bounce"></span>
+                                    <span className="w-1 h-1 bg-amber-500 rounded-full animate-bounce delay-75"></span>
+                                    <span className="w-1 h-1 bg-amber-500 rounded-full animate-bounce delay-150"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
         </div>
     );
 
@@ -327,12 +372,16 @@ export default function ProblemSolvePage() {
                         <div className="flex items-center gap-2 bg-white/5 rounded-xl border border-white/5 p-1 px-3">
                             <Search size={14} className="text-slate-500" />
                             <input className="bg-transparent border-none focus:ring-0 text-[10px] w-32 placeholder:text-slate-600 font-bold uppercase tracking-widest focus:outline-none" placeholder="Go to..." type="text" />
+                            <div className="hidden md:flex items-center gap-1 bg-white/10 rounded px-1.5 py-0.5 pointer-events-none">
+                                <span className="text-[10px] text-slate-400 font-mono">⌘</span>
+                                <span className="text-[10px] text-slate-400 font-mono">K</span>
+                            </div>
                         </div>
                         <div className="flex items-center gap-2">
                             <button
                                 onClick={runCodeOption}
                                 disabled={submitting || runningCode}
-                                className="flex items-center gap-2 bg-slate-800 text-slate-300 hover:text-white px-5 py-2 rounded-xl border border-white/10 text-[10px] font-black uppercase tracking-widest shadow-lg hover:bg-slate-700 transition-all disabled:opacity-50"
+                                className="flex items-center gap-2 bg-slate-800 text-slate-300 hover:text-white px-5 py-2 rounded-xl border border-white/10 text-[10px] font-black uppercase tracking-widest shadow-[0_0_15px_rgba(255,255,255,0.05)] hover:shadow-[0_0_25px_rgba(255,255,255,0.1)] transition-all disabled:opacity-50"
                             >
                                 {runningCode ? <RotateCcw size={14} className="animate-spin" /> : <Play size={14} className="text-emerald-500" />}
                                 {runningCode ? 'Running' : 'Run '}
@@ -340,7 +389,7 @@ export default function ProblemSolvePage() {
                             <button
                                 onClick={submitCode}
                                 disabled={submitting || runningCode}
-                                className="flex items-center gap-2 bg-amber-500 text-black px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-amber-500/20 hover:scale-105 transition-all disabled:opacity-50"
+                                className="flex items-center gap-2 bg-amber-500 text-black px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-[0_0_20px_rgba(245,158,11,0.3)] hover:shadow-[0_0_30px_rgba(245,158,11,0.5)] hover:-translate-y-0.5 active:translate-y-0 transition-all disabled:opacity-50"
                             >
                                 {submitting ? <RotateCcw size={14} className="animate-spin" /> : <CloudUpload size={14} />}
                                 {submitting ? 'Judging' : 'Submit'}

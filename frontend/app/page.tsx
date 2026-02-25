@@ -16,7 +16,7 @@ export default function LandingPage() {
 
     useEffect(() => {
         if (user) {
-            router.push('/problems');
+            router.push('/profile');
         }
 
         const interval = setInterval(() => {
@@ -37,6 +37,17 @@ export default function LandingPage() {
 
             {/* Hero Section */}
             <section className="pt-32 pb-20 px-6 flex flex-col items-center justify-center text-center relative z-10 max-w-4xl mx-auto">
+                <motion.div
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mb-8 flex items-center gap-2 px-4 py-2 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-500 text-xs font-black uppercase tracking-widest shadow-[0_0_20px_rgba(245,158,11,0.2)]"
+                >
+                    <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                    </span>
+                    Arena v2 is now live
+                </motion.div>
 
                 <motion.div
                     initial={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -44,7 +55,7 @@ export default function LandingPage() {
                     transition={{ duration: 0.6, ease: "easeOut" }}
                     className="mb-10 relative flex items-center justify-center"
                 >
-                    <div className="bg-white px-8 py-6 rounded-[2.5rem] shadow-2xl dark:shadow-[0_0_50px_rgba(255,255,255,0.05)] border border-slate-100 dark:border-white/10 group hover:shadow-primary/20 dark:hover:shadow-primary/10 transition-shadow duration-500">
+                    <div className="bg-white px-8 py-6 rounded-[2.5rem] shadow-2xl dark:shadow-[0_0_50px_rgba(255,255,255,0.05)] border border-slate-100 dark:border-white/10 group hover:shadow-[0_0_40px_rgba(245,158,11,0.2)] hover:border-amber-500/30 transition-all duration-500">
                         <div className="relative w-[280px] md:w-[360px] h-[120px] md:h-[160px] group-hover:scale-[1.02] transition-transform duration-500">
                             <Image
                                 src="/gpcet-codearena-logo.png"

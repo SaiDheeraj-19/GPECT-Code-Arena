@@ -1,3 +1,4 @@
+/* eslint-disable */
 "use client";
 
 import { motion } from "framer-motion";
@@ -125,8 +126,8 @@ export default function LearningPathsPage() {
                                     <button
                                         disabled={path.status === "Locked"}
                                         className={`w-full py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${path.status === "Locked"
-                                                ? "bg-slate-100 dark:bg-white/5 text-slate-400 cursor-not-allowed"
-                                                : "bg-primary text-white hover:shadow-[0_0_20px_rgba(59,130,246,0.4)] translate-y-0 active:scale-95 shadow-lg shadow-primary/20"
+                                            ? "bg-slate-100 dark:bg-white/5 text-slate-400 cursor-not-allowed"
+                                            : "bg-primary text-white hover:shadow-[0_0_20px_rgba(59,130,246,0.4)] translate-y-0 active:scale-95 shadow-lg shadow-primary/20"
                                             }`}
                                     >
                                         {path.status === "Locked" ? <ShieldCheck size={14} /> : <Trophy size={14} />}

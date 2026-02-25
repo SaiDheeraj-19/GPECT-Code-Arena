@@ -120,6 +120,7 @@ export function Navbar() {
                                                         <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5 truncate">{user?.roll_number || user?.email}</p>
                                                     </div>
 
+                                                    <DropdownItem icon={UserIcon} label="My Profile" onClick={() => { router.push('/profile'); setIsProfileOpen(false); }} />
                                                     <DropdownItem icon={LayoutDashboard} label="Dashboard" onClick={() => { router.push('/problems'); setIsProfileOpen(false); }} />
                                                     <DropdownItem icon={Settings} label="Profile Settings" onClick={() => { router.push('/settings'); setIsProfileOpen(false); }} />
 

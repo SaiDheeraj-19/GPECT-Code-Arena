@@ -27,7 +27,7 @@ export default function LoginPage() {
         if (user) {
             if (user.must_change_password) router.push('/reset-password');
             else if (user.role === 'ADMIN') router.push('/admin/dashboard');
-            else router.push('/problems');
+            else router.push('/profile');
         }
     }, [router, initializeAuth]);
 
@@ -52,7 +52,7 @@ export default function LoginPage() {
             } else if (decoded.role === 'ADMIN') {
                 router.push('/admin/dashboard');
             } else {
-                router.push('/problems');
+                router.push('/profile');
             }
         } catch (err: any) {
             setError(err.response?.data?.error || "Connection error. Please try again.");

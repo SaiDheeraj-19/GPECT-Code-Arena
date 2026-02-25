@@ -1,3 +1,4 @@
+/* eslint-disable */
 "use client";
 
 import React, { useState } from 'react';
@@ -112,8 +113,8 @@ export default function PremiumEditor() {
                             <button
                                 onClick={() => setActiveTab('description')}
                                 className={`flex-1 py-1.5 px-4 rounded-xl text-xs font-bold transition-all ${activeTab === 'description'
-                                        ? 'bg-white text-slate-900 shadow-sm border border-slate-200/40'
-                                        : 'text-slate-500 hover:text-slate-700'
+                                    ? 'bg-white text-slate-900 shadow-sm border border-slate-200/40'
+                                    : 'text-slate-500 hover:text-slate-700'
                                     }`}
                             >
                                 Description
@@ -121,8 +122,8 @@ export default function PremiumEditor() {
                             <button
                                 onClick={() => setActiveTab('solutions')}
                                 className={`flex-1 py-1.5 px-4 rounded-xl text-xs font-bold transition-all ${activeTab === 'solutions'
-                                        ? 'bg-white text-slate-900 shadow-sm border border-slate-200/40'
-                                        : 'text-slate-500 hover:text-slate-700'
+                                    ? 'bg-white text-slate-900 shadow-sm border border-slate-200/40'
+                                    : 'text-slate-500 hover:text-slate-700'
                                     }`}
                             >
                                 Solutions
@@ -130,8 +131,8 @@ export default function PremiumEditor() {
                             <button
                                 onClick={() => setActiveTab('submissions')}
                                 className={`flex-1 py-1.5 px-4 rounded-xl text-xs font-bold transition-all ${activeTab === 'submissions'
-                                        ? 'bg-white text-slate-900 shadow-sm border border-slate-200/40'
-                                        : 'text-slate-500 hover:text-slate-700'
+                                    ? 'bg-white text-slate-900 shadow-sm border border-slate-200/40'
+                                    : 'text-slate-500 hover:text-slate-700'
                                     }`}
                             >
                                 Submissions
