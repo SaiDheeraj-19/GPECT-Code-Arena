@@ -26,7 +26,7 @@ export function PointActivityModal({ isOpen, onClose }: { isOpen: boolean, onClo
     const fetchActivities = async () => {
         try {
             setLoading(true);
-            const { data } = await api.get('/activities/points');
+            const { data } = await api.get('/problems/activities/points');
             setActivities(data);
         } catch (e) {
             console.error(e);

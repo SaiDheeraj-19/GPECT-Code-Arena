@@ -68,13 +68,16 @@ export function Navbar() {
                                 {/* Points Display */}
                                 <button
                                     onClick={() => setIsActivityOpen(true)}
-                                    className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-all group"
+                                    className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-all group pointer-events-auto"
+                                    title="View HP Activity"
                                 >
                                     <div className="size-5 rounded-lg bg-amber-500/20 flex items-center justify-center text-amber-500">
                                         <Zap size={14} className="fill-amber-500" />
                                     </div>
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-foreground">{user?.points || 0}</span>
-                                    <History size={12} className="text-slate-500 group-hover:text-amber-500 transition-colors" />
+                                    <div className="flex flex-col items-start leading-none gap-0.5">
+                                        <span className="text-[10px] font-black tracking-tighter text-foreground">{user?.points || 0} HP</span>
+                                    </div>
+                                    <History size={12} className="text-slate-500 group-hover:text-amber-500 transition-colors hidden sm:block" />
                                 </button>
 
                                 {/* Streak Display */}
