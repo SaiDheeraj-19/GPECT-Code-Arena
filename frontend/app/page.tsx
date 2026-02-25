@@ -35,77 +35,79 @@ export default function LandingPage() {
             {/* Navigation Bar */}
             <Navbar />
 
-            {/* Hero Section */}
-            <section className="pt-32 pb-20 px-6 flex flex-col items-center justify-center text-center relative z-10 max-w-4xl mx-auto">
-                <motion.div
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="mb-8 flex items-center gap-2 px-4 py-2 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-500 text-xs font-black uppercase tracking-widest shadow-[0_0_20px_rgba(245,158,11,0.2)]"
-                >
-                    <span className="relative flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
-                    </span>
-                    Arena v2 is now live
-                </motion.div>
+            {/* Cinematic Hero Section */}
+            <section className="relative min-h-screen flex flex-col items-center justify-center pt-20 px-6 overflow-hidden">
+                {/* Background ambient glows */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120vw] h-[120vh] bg-[#0a0a0b] -z-10" />
+                <div className="absolute top-[20%] right-[10%] w-[40vw] h-[40vw] bg-primary/20 blur-[180px] rounded-full -z-[5]" />
+                <div className="absolute bottom-[20%] left-[10%] w-[30vw] h-[30vw] bg-amber-500/10 blur-[150px] rounded-full -z-[5]" />
+                <div className="bg-noise fixed inset-0 opacity-[0.02] pointer-events-none -z-[1]" />
 
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    transition={{ duration: 0.6, ease: "easeOut" }}
-                    className="mb-10 relative flex items-center justify-center"
-                >
-                    <div className="bg-white px-8 py-6 rounded-[2.5rem] shadow-2xl dark:shadow-[0_0_50px_rgba(255,255,255,0.05)] border border-slate-100 dark:border-white/10 group hover:shadow-[0_0_40px_rgba(245,158,11,0.2)] hover:border-amber-500/30 transition-all duration-500">
-                        <div className="relative w-[280px] md:w-[360px] h-[120px] md:h-[160px] group-hover:scale-[1.02] transition-transform duration-500">
-                            <Image
-                                src="/gpcet-codearena-logo.png"
-                                alt="GPCET CodeArena Logo"
-                                fill
-                                className="object-contain"
-                                priority
-                            />
+                <div className="container max-w-7xl mx-auto flex flex-col items-center relative z-10">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9, y: 30 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                        className="mb-8"
+                    >
+                        <div className="p-[2px] rounded-[3rem] bg-gradient-to-br from-white/20 to-transparent">
+                            <div className="bg-[#111114] px-10 py-8 rounded-[2.9rem] flex items-center justify-center border border-white/5 shadow-2xl relative group overflow-hidden">
+                                <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-amber-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                                <div className="relative w-[300px] md:w-[450px] h-[140px] md:h-[180px]">
+                                    <Image
+                                        src="/gpcet-codearena-logo.png"
+                                        alt="GPCET CodeArena"
+                                        fill
+                                        className="object-contain drop-shadow-[0_0_30px_rgba(255,255,255,0.1)]"
+                                        priority
+                                    />
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </motion.div>
-                <motion.h1
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                    className="text-6xl md:text-[5rem] font-extrabold tracking-tighter leading-[1] mb-6 text-slate-900 dark:text-white"
-                >
-                    Code. Create.<br className="hidden md:block" />
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-amber-500">Command.</span>
-                </motion.h1>
+                    </motion.div>
 
-                <motion.p
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="text-slate-500 dark:text-slate-400 text-lg md:text-xl max-w-2xl mx-auto font-medium mb-10 leading-relaxed"
-                >
-                    The ultimate arena for GPCET engineers to master the craft of software with precision-engineered tools and elite competition.
-                </motion.p>
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3 }}
+                        className="flex flex-col items-center gap-6"
+                    >
+                        <div className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-slate-400 text-[10px] font-black uppercase tracking-[0.3em] flex items-center gap-2">
+                            <span className="relative flex h-2 w-2">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                            </span>
+                            Arena V2 Protocol Active
+                        </div>
 
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                    className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto"
-                >
-                    <button
-                        onClick={() => router.push('/login')}
-                        className="w-full sm:w-auto px-8 py-4 bg-primary text-white dark:text-background-dark font-bold rounded-full shadow-lg shadow-primary/20 hover:opacity-90 transition-all flex items-center justify-center gap-2 group"
-                    >
-                        Get Started
-                        <ArrowRight size={18} strokeWidth={2.5} className="group-hover:translate-x-1 transition-transform" />
-                    </button>
-                    <button
-                        onClick={() => router.push('/leaderboard')}
-                        className="w-full sm:w-auto px-8 py-4 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/10 text-slate-900 dark:text-white font-bold rounded-full transition-all flex items-center justify-center shadow-sm dark:shadow-none"
-                    >
-                        View Ranking
-                    </button>
-                </motion.div>
+                        <h1 className="text-6xl md:text-[6.5rem] font-black tracking-tighter leading-[0.85] text-center">
+                            CODE WITH<br />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-white/30 italic">PRECI$ION.</span>
+                        </h1>
+
+                        <p className="text-slate-500 text-lg md:text-xl max-w-2xl text-center font-medium mt-4 leading-relaxed">
+                            The elite framework for GPCET engineers. Real-time execution,
+                            global competitive ranking, and absolute performance monitoring.
+                        </p>
+
+                        <div className="flex flex-col sm:flex-row items-center gap-6 mt-6">
+                            <button
+                                onClick={() => router.push('/login')}
+                                className="px-12 py-5 bg-white text-black font-black text-sm uppercase tracking-widest rounded-full hover:scale-105 transition-all shadow-[0_0_40px_rgba(255,255,255,0.1)] flex items-center gap-3 group"
+                            >
+                                Initiate Session
+                                <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                            </button>
+                            <button
+                                onClick={() => router.push('/leaderboard')}
+                                className="px-12 py-5 bg-white/5 border border-white/10 text-white font-black text-sm uppercase tracking-widest rounded-full hover:bg-white/10 transition-all flex items-center gap-3"
+                            >
+                                Leaderboard
+                                <Trophy size={18} />
+                            </button>
+                        </div>
+                    </motion.div>
+                </div>
             </section>
 
             {/* IDE Mockup Section */}
