@@ -40,7 +40,21 @@ const server = http.createServer(app);
 // ── Security Middleware ──
 app.use(helmet());
 app.use(cors({
-    origin: [process.env.FRONTEND_URL || 'http://localhost:3000', 'http://127.0.0.1:3000'],
+    origin: function (origin, callback) {
+        if (!origin) return callback(null, true);
+        if (
+            origin.includes('vercel.app') ||
+            origin.includes('localhost') ||
+            origin.includes('127.0.0.1') ||
+            origin === process.env.FRONTEND_URL ||
+            origin === process.env.FRONTEND_URL?.replace(/\/$/, '')
+        ) {
+            callback(null, true);
+        } else {
+            console.warn('[CORS] Blocked origin:', origin);
+            callback(null, false);
+        }
+    },
     credentials: true,
 }));
 app.use(express.json({ limit: '10mb' })); // Increased for SQL schemas
