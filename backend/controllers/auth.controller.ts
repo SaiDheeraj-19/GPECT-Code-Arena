@@ -8,58 +8,74 @@ export const login = async (req: Request, res: Response) => {
     try {
         const { identifier, password } = req.body; // identifier can be email or roll_number
 
-        if (!identifier || !password) {
-            return res.status(400).json({ error: 'Identifier and password are required' });
+        if (!identifier) {
+            return res.status(400).json({ error: 'Identifier is required' });
         }
 
-        // Determine if identifier is an email or roll number
         const isEmail = identifier.includes('@');
-        const isRollNumber = /^[a-zA-Z0-9_-]{5,15}$/i.test(identifier);
+        const rollNumberPattern = /^\d{2}[a-zA-Z]{3}\d{5}$/i;
+        const isStudentRoll = rollNumberPattern.test(identifier);
 
-        if (!isEmail && !isRollNumber) {
-            return res.status(400).json({ error: 'Invalid identifier format. Must be an email or a valid roll number.' });
+        if (!isEmail && !isStudentRoll) {
+            return res.status(400).json({ error: 'Invalid login format. Use a student roll number (e.g., 24ATA05269) or admin email.' });
         }
 
         let user;
-        if (isRollNumber && !isEmail) {
-            user = await prisma.user.findUnique({ where: { roll_number: identifier.toUpperCase() } });
-        } else {
+
+        // --- ADMIN LOGIN FLOW (REQUIRES EMAIL + PASSWORD) ---
+        if (isEmail) {
+            if (!password) return res.status(400).json({ error: 'Password is required for admin login' });
+
             user = await prisma.user.findUnique({ where: { email: identifier.toLowerCase() } });
+            if (!user) return res.status(401).json({ error: 'Invalid credentials' });
+
+            if (user.locked_until && user.locked_until > new Date()) {
+                return res.status(403).json({ error: 'Account temporarily locked. Please try again later.' });
+            }
+
+            const isMatch = await bcrypt.compare(password, user.password_hash);
+            if (!isMatch) {
+                const newAttempts = user.failed_attempts + 1;
+                let lockedUntil = null;
+                if (newAttempts >= 5) lockedUntil = new Date(Date.now() + 15 * 60 * 1000);
+
+                await prisma.user.update({
+                    where: { id: user.id },
+                    data: { failed_attempts: newAttempts, locked_until: lockedUntil }
+                });
+                return res.status(lockedUntil ? 403 : 401).json({ error: lockedUntil ? 'Account locked due to too many failed attempts' : 'Invalid credentials' });
+            }
+
+            if (user.failed_attempts > 0 || user.locked_until) {
+                await prisma.user.update({
+                    where: { id: user.id },
+                    data: { failed_attempts: 0, locked_until: null }
+                });
+            }
+        }
+        // --- STUDENT LOGIN FLOW (PASSWORDLESS + AUTO-CREATE) ---
+        else if (isStudentRoll) {
+            const rollNumber = identifier.toUpperCase();
+            user = await prisma.user.findUnique({ where: { roll_number: rollNumber } });
+
+            if (!user) {
+                const defaultHash = await bcrypt.hash('AutoRegister@123', 10);
+                user = await prisma.user.create({
+                    data: {
+                        name: 'Coder',
+                        roll_number: rollNumber,
+                        password_hash: defaultHash,
+                        role: Role.STUDENT,
+                        must_change_password: false,
+                        // @ts-ignore
+                        is_profile_complete: false
+                    }
+                });
+            }
         }
 
         if (!user) {
-            return res.status(401).json({ error: 'Invalid credentials' });
-        }
-
-        // Check if account is locked
-        if (user.locked_until && user.locked_until > new Date()) {
-            return res.status(403).json({ error: 'Account temporarily locked. Please try again later.' });
-        }
-
-        const isMatch = await bcrypt.compare(password, user.password_hash);
-
-        if (!isMatch) {
-            const newAttempts = user.failed_attempts + 1;
-            let lockedUntil = null;
-
-            if (newAttempts >= 5) {
-                // Lock out for 15 minutes
-                lockedUntil = new Date(Date.now() + 15 * 60 * 1000);
-            }
-
-            await prisma.user.update({
-                where: { id: user.id },
-                data: {
-                    failed_attempts: newAttempts,
-                    locked_until: lockedUntil
-                }
-            });
-
-            if (lockedUntil) {
-                return res.status(403).json({ error: 'Account locked due to too many failed attempts' });
-            }
-
-            return res.status(401).json({ error: 'Invalid credentials' });
+            return res.status(401).json({ error: 'Authentication failed' });
         }
 
         // Password is correct, reset failed attempts
@@ -130,6 +146,8 @@ export const login = async (req: Request, res: Response) => {
                 role: user.role,
                 must_change_password: user.must_change_password,
                 // @ts-ignore
+                is_profile_complete: user.is_profile_complete,
+                // @ts-ignore
                 points: user.points,
                 // @ts-ignore
                 streak: user.streak
@@ -147,6 +165,8 @@ export const login = async (req: Request, res: Response) => {
                 roll_number: user.roll_number,
                 role: user.role,
                 must_change_password: user.must_change_password,
+                // @ts-ignore
+                is_profile_complete: user.is_profile_complete,
                 // @ts-ignore
                 points: user.points,
                 // @ts-ignore
@@ -258,7 +278,7 @@ export const resetPassword = async (req: Request, res: Response) => {
 export const updateProfile = async (req: Request, res: Response) => {
     try {
         const userId = (req as any).user.id;
-        const { name, username, bio, portfolio_url, avatar_url } = req.body;
+        const { name, username, bio, portfolio_url, avatar_url, year, semester, branch, section } = req.body;
 
         const updatedUser = await prisma.user.update({
             where: { id: userId },
@@ -267,7 +287,13 @@ export const updateProfile = async (req: Request, res: Response) => {
                 username: username || null,
                 bio: bio || null,
                 portfolio_url: portfolio_url || null,
-                avatar_url: avatar_url || null
+                avatar_url: avatar_url || null,
+                year: year ? parseInt(year) : undefined,
+                semester: semester ? parseInt(semester) : undefined,
+                branch: branch || undefined,
+                section: section || undefined,
+                // Automatically mark complete if these fields are provided
+                is_profile_complete: !!(year && semester && branch && section) ? true : undefined
             }
         });
 
@@ -282,7 +308,9 @@ export const updateProfile = async (req: Request, res: Response) => {
                 portfolio_url: updatedUser.portfolio_url,
                 avatar_url: updatedUser.avatar_url,
                 role: updatedUser.role,
-                must_change_password: updatedUser.must_change_password
+                must_change_password: updatedUser.must_change_password,
+                // @ts-ignore
+                is_profile_complete: updatedUser.is_profile_complete
             },
             process.env.JWT_SECRET || 'your_jwt_secret_here',
             { expiresIn: '1d' }
@@ -301,7 +329,17 @@ export const updateProfile = async (req: Request, res: Response) => {
                 portfolio_url: updatedUser.portfolio_url,
                 avatar_url: updatedUser.avatar_url,
                 role: updatedUser.role,
-                must_change_password: updatedUser.must_change_password
+                must_change_password: updatedUser.must_change_password,
+                // @ts-ignore
+                is_profile_complete: updatedUser.is_profile_complete,
+                // @ts-ignore
+                year: updatedUser.year,
+                // @ts-ignore
+                semester: updatedUser.semester,
+                // @ts-ignore
+                branch: updatedUser.branch,
+                // @ts-ignore
+                section: updatedUser.section
             }
         });
     } catch (error: any) {

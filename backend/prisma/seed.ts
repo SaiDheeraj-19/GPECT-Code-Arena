@@ -26,51 +26,7 @@ async function main() {
         },
     });
 
-    const studentPass = await bcrypt.hash('Gpcet@codeATA', 10);
-    // Give points to Test Student 1 to unlock interview questions
-    const testStudent1 = await prisma.user.upsert({
-        where: { roll_number: '24ATA05269' },
-        update: {
-            password_hash: studentPass,
-            failed_attempts: 0,
-            locked_until: null,
-            // @ts-ignore
-            points: 12500,
-            streak: 7
-        },
-        create: {
-            name: 'Elite Student',
-            roll_number: '24ATA05269',
-            password_hash: studentPass,
-            role: Role.STUDENT,
-            must_change_password: false,
-            // @ts-ignore
-            points: 12500,
-            streak: 7
-        }
-    });
-
-    const testStudent2 = await prisma.user.upsert({
-        where: { roll_number: '24ATA05063' },
-        update: {
-            password_hash: studentPass,
-            failed_attempts: 0,
-            locked_until: null,
-            // @ts-ignore
-            points: 450,
-            streak: 1
-        },
-        create: {
-            name: 'Novice Student',
-            roll_number: '24ATA05063',
-            password_hash: studentPass,
-            role: Role.STUDENT,
-            must_change_password: false,
-            // @ts-ignore
-            points: 450,
-            streak: 1
-        }
-    });
+    // Note: Test Students 24ATA05269 and 24ATA05063 have been permanently removed for production readiness.
 
     // Add some sample problems
     await prisma.problem.upsert({
@@ -116,7 +72,6 @@ async function main() {
     });
 
     console.log("Database seeded successfully with ADMIN user:", admin.email);
-    console.log("Database seeded successfully with TEST STUDENTS:", testStudent1.roll_number, ",", testStudent2.roll_number);
 }
 
 main()

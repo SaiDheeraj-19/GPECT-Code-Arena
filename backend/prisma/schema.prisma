@@ -23,6 +23,11 @@ model User {
   portfolio_url        String?
   username             String?         @unique
   last_login           DateTime?
+  year                 Int?
+  semester             Int?
+  branch               String?
+  section              String?
+  is_profile_complete  Boolean         @default(false)
   points               Int             @default(0)
   streak               Int             @default(0)
   certificates         Certificate[]

@@ -7,6 +7,7 @@ import { useAuthStore } from "../../store/auth";
 import api from "../../lib/api";
 import { Navbar } from "../../components/Navbar";
 import { Footer } from "../../components/Footer";
+import { OnboardingModal } from "../../components/OnboardingModal";
 import { Trophy, Code2, Award, Terminal, CheckCircle2 } from "lucide-react";
 
 export default function ProfilePage() {
@@ -67,6 +68,9 @@ export default function ProfilePage() {
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-[#0a0a0b] text-slate-900 dark:text-slate-100 font-display selection:bg-primary selection:text-white dark:selection:text-background-dark transition-colors duration-500 overflow-x-hidden">
+            {user?.role === 'STUDENT' && user?.is_profile_complete === false && (
+                <OnboardingModal />
+            )}
             <Navbar />
 
             <main className="pt-32 pb-20 px-6 max-w-5xl mx-auto relative z-10 transition-colors">
@@ -75,7 +79,7 @@ export default function ProfilePage() {
                     <div className="size-24 rounded-full border-4 border-primary p-1 shrink-0">
                         <div className="w-full h-full rounded-full overflow-hidden bg-slate-100 dark:bg-white/5 flex items-center justify-center">
                             {user?.avatar_url ? (
-                                <img src={user.avatar_url} alt={user.name} className="w-full h-full object-cover" />
+                                <img src={user.avatar_url} alt={user.name} className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                             ) : (
                                 <span className="text-3xl font-bold text-slate-400">
                                     {user?.name?.charAt(0) || 'U'}

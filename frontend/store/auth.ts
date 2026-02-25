@@ -14,6 +14,7 @@ export interface User {
     must_change_password?: boolean;
     points?: number;
     streak?: number;
+    is_profile_complete?: boolean;
 }
 
 export interface AuthState {

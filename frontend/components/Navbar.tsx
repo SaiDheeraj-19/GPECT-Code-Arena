@@ -17,7 +17,6 @@ import {
 import { useState } from "react";
 import { PointActivityModal } from "./PointActivityModal";
 import { motion, AnimatePresence } from "framer-motion";
-import Image from "next/image"; // Added this import
 
 export function Navbar() {
     const router = useRouter();
@@ -92,7 +91,7 @@ export function Navbar() {
                                     >
                                         <div className={`size-8 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 overflow-hidden border-2 border-white/10 ${rank.glow}`}>
                                             {user?.avatar_url ? (
-                                                <Image src={user.avatar_url} alt="" width={32} height={32} className="w-full h-full object-cover" />
+                                                <img src={user.avatar_url} alt="" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                                             ) : (
                                                 <div className="w-full h-full flex items-center justify-center text-black">
                                                     <UserIcon size={16} />

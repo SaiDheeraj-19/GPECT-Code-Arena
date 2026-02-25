@@ -13,6 +13,7 @@ import {
     Settings,
     Box,
     User as UserIcon,
+    Users,
     LogOut,
     Trophy,
     Award
@@ -43,6 +44,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { label: "Problems", href: "/admin/problems", icon: Code2 },
         { label: "Contests", href: "/admin/contests", icon: Trophy },
         { label: "Submissions", href: "/admin/submissions", icon: ClipboardList },
+        { label: "Students", href: "/admin/students", icon: Users },
         { label: "Certificates", href: "/admin/certificates", icon: Award },
         { label: "User Logs", href: "/admin/logs", icon: ShieldAlert },
     ];

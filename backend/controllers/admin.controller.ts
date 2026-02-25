@@ -474,3 +474,36 @@ export const getStudentAnalytics = async (req: Request, res: Response) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 };
+
+/**
+ * Get all students for directory (admin view)
+ * GET /api/admin/students/directory
+ */
+export const getAllStudents = async (req: Request, res: Response) => {
+    try {
+        const students = await prisma.user.findMany({
+            where: { role: 'STUDENT' },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                roll_number: true,
+                year: true,
+                semester: true,
+                branch: true,
+                section: true,
+                is_profile_complete: true,
+                points: true,
+                streak: true,
+                last_login: true,
+                created_at: true,
+            },
+            orderBy: { created_at: 'desc' }
+        });
+
+        res.json(students);
+    } catch (error) {
+        console.error('Error fetching students directory:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};

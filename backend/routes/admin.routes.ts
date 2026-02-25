@@ -9,7 +9,8 @@ import {
     getAllSubmissions,
     getLogs,
     getDashboardStats,
-    getStudentAnalytics
+    getStudentAnalytics,
+    getAllStudents
 } from '../controllers/admin.controller';
 import { authenticateToken } from '../middleware/auth.middleware';
 import { requireAdmin } from '../middleware/role.middleware';
@@ -36,7 +37,8 @@ router.get('/logs', getLogs);
 // Dashboard
 router.get('/stats', getDashboardStats);
 
-// Student Analytics
+// Student Analytics & Directory
+router.get('/students/directory', getAllStudents);
 router.get('/students/:userId/analytics', getStudentAnalytics);
 
 export default router;
