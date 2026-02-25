@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import api from "../../../lib/api";
-import { Search, Loader2, Plus, Code2, X, Trash2, CheckCircle2 } from "lucide-react";
+import { Search, Loader2, Plus, Code2, X, Trash2, CheckCircle2, Eye } from "lucide-react";
 
 interface TestCase {
     input: string;
@@ -18,6 +18,7 @@ interface Problem {
     difficulty: 'Easy' | 'Medium' | 'Hard';
     tags: string[];
     testCases: TestCase[];
+    is_interview: boolean;
 }
 
 interface NewProblemFormState {
@@ -26,6 +27,7 @@ interface NewProblemFormState {
     difficulty: 'Easy' | 'Medium' | 'Hard';
     tags: string; // This is a comma-separated string in the form
     testCases: TestCase[];
+    is_interview: boolean;
 }
 
 export default function AdminProblems() {
@@ -41,6 +43,7 @@ export default function AdminProblems() {
         description: "",
         difficulty: "Easy",
         tags: "",
+        is_interview: false,
         testCases: [{ input: "", expected_output: "", is_hidden: false }]
     });
 
@@ -74,6 +77,7 @@ export default function AdminProblems() {
                 description: "",
                 difficulty: "Easy",
                 tags: "",
+                is_interview: false,
                 testCases: [{ input: "", expected_output: "", is_hidden: false }]
             });
             fetchProblems();
@@ -93,6 +97,15 @@ export default function AdminProblems() {
         } catch (error) {
             console.error("Failed to delete problem:", error);
             alert("Failed to delete problem.");
+        }
+    };
+
+    const handleToggleInterview = async (id: string, current: boolean) => {
+        try {
+            await api.put(`/admin/problems/${id}`, { is_interview: !current });
+            fetchProblems();
+        } catch (error) {
+            console.error("Failed to toggle interview status:", error);
         }
     };
 
@@ -155,8 +168,9 @@ export default function AdminProblems() {
                 <table className="w-full text-sm text-left">
                     <thead className="bg-slate-50 dark:bg-white/5 text-xs text-slate-500 dark:text-slate-400 uppercase font-bold border-b border-slate-100 dark:border-white/10 transition-colors">
                         <tr>
-                            <th className="py-4 px-6 w-1/2">Problem Title</th>
+                            <th className="py-4 px-6 w-1/3">Problem Title</th>
                             <th className="py-4 px-6">Difficulty</th>
+                            <th className="py-4 px-6">Interview</th>
                             <th className="py-4 px-6 text-right">Actions</th>
                         </tr>
                     </thead>
@@ -188,7 +202,25 @@ export default function AdminProblems() {
                                         {prob.difficulty}
                                     </span>
                                 </td>
+                                <td className="py-4 px-6">
+                                    <button
+                                        onClick={() => handleToggleInterview(prob.id, prob.is_interview)}
+                                        className={`px-3 py-1 rounded-full text-[10px] font-black transition-all border ${prob.is_interview
+                                            ? 'bg-amber-500/10 text-amber-500 border-amber-500/20 shadow-[0_0_10px_rgba(245,158,11,0.1)]'
+                                            : 'bg-slate-100 dark:bg-white/5 text-slate-400 dark:text-slate-500 border-transparent hover:border-slate-300 dark:hover:border-white/10'
+                                            }`}
+                                    >
+                                        {prob.is_interview ? 'YES' : 'NO'}
+                                    </button>
+                                </td>
                                 <td className="py-4 px-6 text-right space-x-2 flex justify-end items-center">
+                                    <button
+                                        onClick={() => window.open(`/problems/${prob.id}`, '_blank')}
+                                        className="p-1.5 rounded-lg text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors"
+                                        title="Preview Problem"
+                                    >
+                                        <Eye size={16} />
+                                    </button>
                                     <button
                                         onClick={() => router.push(`/admin/problems/edit?id=${prob.id}`)}
                                         className="text-xs font-bold text-primary hover:text-primary/80 bg-primary/10 px-3 py-1.5 rounded-lg transition-colors"
@@ -266,6 +298,16 @@ export default function AdminProblems() {
                                                 className="w-full bg-slate-50 dark:bg-white/5 border border-transparent dark:border-white/10 rounded-2xl px-5 py-4 text-sm font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 transition-all outline-none"
                                                 placeholder="array, search, basic"
                                             />
+                                        </div>
+                                        <div className="flex items-center gap-2 ml-1">
+                                            <input
+                                                type="checkbox"
+                                                id="quick-interview"
+                                                checked={newProblem.is_interview}
+                                                onChange={(e) => setNewProblem({ ...newProblem, is_interview: e.target.checked })}
+                                                className="rounded border-slate-300 dark:border-white/10 dark:bg-white/5 text-primary focus:ring-primary/20 transition-colors"
+                                            />
+                                            <label htmlFor="quick-interview" className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase cursor-pointer transition-colors">Mark as Interview Problem</label>
                                         </div>
                                     </div>
 

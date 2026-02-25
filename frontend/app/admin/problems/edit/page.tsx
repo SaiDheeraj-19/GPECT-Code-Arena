@@ -12,7 +12,8 @@ import {
     BarChart3,
     Tag,
     ChevronLeft,
-    Loader2
+    Loader2,
+    Eye
 } from "lucide-react";
 import { useCallback } from "react";
 import api from "../../../../lib/api";
@@ -32,6 +33,7 @@ function EditProblemContent() {
         difficulty: "Easy",
         tags: "",
         default_solution: "",
+        is_interview: false,
         testCases: [{ input: "", expected_output: "", is_hidden: false }]
     });
 
@@ -45,6 +47,7 @@ function EditProblemContent() {
                 difficulty: data.difficulty || "Easy",
                 tags: Array.isArray(data.tags) ? data.tags.join(', ') : "",
                 default_solution: data.default_solution || "",
+                is_interview: data.is_interview || false,
                 testCases: data.testCases && data.testCases.length > 0
                     ? data.testCases.map((tc: { input: string; expected_output: string; is_hidden: boolean }) => ({
                         input: tc.input || "",
@@ -175,6 +178,24 @@ function EditProblemContent() {
                                 />
                             </div>
                         </section>
+
+                        <section className="space-y-4">
+                            <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 transition-colors">
+                                <Eye size={12} className="text-amber-500" /> Visibility & Type
+                            </label>
+                            <label className="flex items-center justify-between p-4 bg-white dark:bg-[#0a0a0b] border border-slate-200 dark:border-white/10 rounded-2xl cursor-pointer hover:border-amber-500/50 transition-all group">
+                                <div className="space-y-0.5">
+                                    <span className="text-xs font-bold text-slate-900 dark:text-white block">Interview Ready</span>
+                                    <span className="text-[10px] text-slate-400 dark:text-slate-500">Mark as an interview question</span>
+                                </div>
+                                <input
+                                    type="checkbox"
+                                    checked={problem.is_interview}
+                                    onChange={e => setProblem({ ...problem, is_interview: e.target.checked })}
+                                    className="size-5 rounded border-slate-200 dark:border-white/10 text-amber-500 focus:ring-amber-500/20"
+                                />
+                            </label>
+                        </section>
                     </div>
                 </aside>
 
@@ -279,6 +300,13 @@ function EditProblemContent() {
 
                     {/* Bottom Floating Bar */}
                     <div className="absolute bottom-10 right-10 flex items-center gap-4 bg-white/60 dark:bg-[#0a0a0b]/60 backdrop-blur-md p-2 rounded-full border border-slate-200/60 dark:border-white/10 shadow-xl transition-colors">
+                        <button
+                            onClick={() => window.open(`/problems/${problemId}`, '_blank')}
+                            className="h-12 px-8 rounded-full text-slate-500 dark:text-slate-400 font-bold text-sm hover:bg-slate-100 dark:hover:bg-white/5 transition-all flex items-center gap-2"
+                        >
+                            <Eye size={18} />
+                            Preview
+                        </button>
                         <button
                             onClick={handleSave}
                             disabled={saving}

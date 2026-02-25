@@ -29,6 +29,7 @@ export default function CreateProblemPremium() {
         difficulty: "Easy",
         tags: "",
         default_solution: "",
+        is_interview: false,
         testCases: [{ input: "", expected_output: "", is_hidden: false }]
     });
 
@@ -143,6 +144,24 @@ export default function CreateProblemPremium() {
                                     ))}
                                 </div>
                             </div>
+                        </section>
+
+                        <section className="space-y-4">
+                            <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 transition-colors">
+                                <Eye size={12} className="text-amber-500" /> Visibility & Type
+                            </label>
+                            <label className="flex items-center justify-between p-4 bg-white dark:bg-[#0a0a0b] border border-slate-200 dark:border-white/10 rounded-2xl cursor-pointer hover:border-amber-500/50 transition-all group">
+                                <div className="space-y-0.5">
+                                    <span className="text-xs font-bold text-slate-900 dark:text-white block">Interview Ready</span>
+                                    <span className="text-[10px] text-slate-400 dark:text-slate-500">Mark as an interview question</span>
+                                </div>
+                                <input
+                                    type="checkbox"
+                                    checked={problem.is_interview}
+                                    onChange={e => setProblem({ ...problem, is_interview: e.target.checked })}
+                                    className="size-5 rounded border-slate-200 dark:border-white/10 text-amber-500 focus:ring-amber-500/20"
+                                />
+                            </label>
                         </section>
 
                         <div className="pt-6">

@@ -77,6 +77,7 @@ model Problem {
   testCases         TestCase[]
   contests          Contest[]    @relation("ContestProblems")
   favoritedBy       User[]       @relation("UserFavorites")
+  is_interview      Boolean      @default(false)
 }
 
 model Contest {

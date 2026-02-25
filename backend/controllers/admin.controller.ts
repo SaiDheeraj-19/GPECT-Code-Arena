@@ -32,6 +32,7 @@ export const createProblem = async (req: Request, res: Response) => {
             sql_schema,
             sql_seed_data,
             default_solution,
+            is_interview,
         } = req.body;
 
         const userId = (req as any).user.id;
@@ -69,6 +70,7 @@ export const createProblem = async (req: Request, res: Response) => {
                 sql_seed_data: sql_seed_data || null,
                 // @ts-ignore
                 default_solution: default_solution || null,
+                is_interview: is_interview || false,
                 created_by: userId,
                 testCases: {
                     create: testCases?.map((tc: any) => ({
@@ -111,6 +113,7 @@ export const editProblem = async (req: Request, res: Response) => {
             sql_schema,
             sql_seed_data,
             default_solution,
+            is_interview,
         } = req.body;
 
         const updateData: any = {};
@@ -126,6 +129,7 @@ export const editProblem = async (req: Request, res: Response) => {
         if (sql_seed_data !== undefined) updateData.sql_seed_data = sql_seed_data;
         // @ts-ignore
         if (default_solution !== undefined) updateData.default_solution = default_solution;
+        if (is_interview !== undefined) updateData.is_interview = is_interview;
 
         // Use a transaction to update problem and recreate test cases if provided
         const problem = await prisma.$transaction(async (tx) => {

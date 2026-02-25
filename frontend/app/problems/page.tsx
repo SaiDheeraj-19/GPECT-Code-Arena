@@ -28,6 +28,7 @@ interface Problem {
     acceptanceRate: number;
     status: 'SOLVED' | 'ATTEMPTED' | null;
     likes_count: number;
+    is_interview: boolean;
     isLocked?: boolean;
 }
 
@@ -62,7 +63,8 @@ export default function StudentDashboard() {
 
     const filteredProblems = problems.filter(p => {
         const matchesSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesType = activeType === 'ALL' || p.problem_type === activeType;
+        const matchesType = activeType === 'ALL' ||
+            (activeType === 'INTERVIEW' ? p.is_interview : p.problem_type === activeType);
         return matchesSearch && matchesType;
     });
 
@@ -192,7 +194,7 @@ export default function StudentDashboard() {
                                                         <div className="space-y-1">
                                                             <div className="flex items-center gap-3">
                                                                 <p className={`text-base font-black tracking-tight uppercase ${p.isLocked ? 'text-muted-foreground/30' : 'text-foreground group-hover:text-primary transition-colors'}`}>{p.title}</p>
-                                                                {p.problem_type === 'INTERVIEW' && <div className="px-2 py-0.5 rounded-md bg-purple-500/10 border border-purple-500/20 text-purple-500 text-[8px] font-black uppercase tracking-widest">Interview</div>}
+                                                                {p.is_interview && <div className="px-2 py-0.5 rounded-md bg-purple-500/10 border border-purple-500/20 text-purple-500 text-[8px] font-black uppercase tracking-widest">Interview</div>}
                                                             </div>
                                                             <div className="flex gap-3">
                                                                 {p.tags.slice(0, 3).map((tag, i) => (
