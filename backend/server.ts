@@ -37,6 +37,9 @@ console.log('[Startup] Environment loaded.');
 const app = express();
 const server = http.createServer(app);
 
+// Trust proxy for accurate IP-based rate limiting (important for Vercel/College NATs)
+app.set('trust proxy', 1);
+
 // ── Security Middleware ──
 app.use(helmet());
 app.use(cors({
@@ -63,7 +66,7 @@ app.use(express.urlencoded({ extended: true }));
 // ── Rate Limiting ──
 const apiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 200,
+    max: 1000, // Increased for student activity
     message: { error: 'Too many requests. Please try again later.' },
     standardHeaders: true,
     legacyHeaders: false,
