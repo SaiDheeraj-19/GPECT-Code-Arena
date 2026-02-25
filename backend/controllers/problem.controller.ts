@@ -46,6 +46,7 @@ export const getProblems = async (req: Request, res: Response) => {
                 allowed_languages: true,
                 time_limit: true,
                 memory_limit: true,
+                is_interview: true,
                 // @ts-ignore
                 likes_count: true,
                 // @ts-ignore
@@ -62,44 +63,58 @@ export const getProblems = async (req: Request, res: Response) => {
 
         // Get user points if logged in
         let userPoints = 0;
+        let solvedProblemIds = new Set<string>();
+        let attemptedProblemIds = new Set<string>();
+
         if (userId) {
             const user = await prisma.user.findUnique({ where: { id: userId }, select: { points: true } });
             userPoints = (user as any)?.points || 0;
+
+            // Get all pass submissions for this user in one go
+            const passSubmissions = await prisma.submission.findMany({
+                where: { user_id: userId, status: 'PASS', problem_id: { in: problems.map((p: any) => p.id) } },
+                select: { problem_id: true }
+            });
+            solvedProblemIds = new Set(passSubmissions.map((s: any) => s.problem_id));
+
+            // Get all attempted submissions for this user in one go
+            const attemptedSubmissions = await prisma.submission.findMany({
+                where: { user_id: userId, problem_id: { in: problems.map((p: any) => p.id) } },
+                select: { problem_id: true }
+            });
+            attemptedProblemIds = new Set(attemptedSubmissions.map((s: any) => s.problem_id));
         }
 
+        // Get all passed submissions counts for these problems in one query
+        const passedCounts = await prisma.submission.groupBy({
+            by: ['problem_id'],
+            where: { problem_id: { in: problems.map((p: any) => p.id) }, status: 'PASS' },
+            _count: { _all: true }
+        });
+        const passedCountsMap = new Map(passedCounts.map((c: any) => [c.problem_id, c._count._all]));
+
         // Get acceptance rate and user status for each problem
-        const result = await Promise.all(problems.map(async (p) => {
+        const result = problems.map((p: any) => {
             const totalSubs = (p as any)._count?.submissions || 0;
-            const passedSubs = await prisma.submission.count({
-                where: { problem_id: p.id, status: 'PASS' }
-            });
+            const passedSubs = passedCountsMap.get(p.id) || 0;
 
             let status = null;
-            if (userId) {
-                const solved = await prisma.submission.findFirst({
-                    where: { problem_id: p.id, user_id: userId, status: 'PASS' }
-                });
-                status = solved ? 'SOLVED' : null;
-                if (!status) {
-                    const attempted = await prisma.submission.findFirst({
-                        where: { problem_id: p.id, user_id: userId }
-                    });
-                    if (attempted) status = 'ATTEMPTED';
-                }
+            if (solvedProblemIds.has(p.id)) {
+                status = 'SOLVED';
+            } else if (attemptedProblemIds.has(p.id)) {
+                status = 'ATTEMPTED';
             }
 
-            // Lock logic for interview problems
-            // @ts-ignore
-            const isLocked = p.problem_type === 'INTERVIEW' && userPoints < 10000;
+            const isLocked = p.is_interview && userPoints < 10000;
 
             return {
                 ...p,
                 totalSubmissions: totalSubs,
-                acceptanceRate: totalSubs > 0 ? Math.round((passedSubs / totalSubs) * 100) : 0,
+                acceptanceRate: totalSubs > 0 ? Math.round((Number(passedSubs) / Number(totalSubs)) * 100) : 0,
                 status,
                 isLocked
             };
-        }));
+        });
 
         res.json(result);
     } catch (error) {
@@ -172,7 +187,7 @@ export const getProblem = async (req: Request, res: Response) => {
             userPoints = (user as any)?.points || 0;
         }
 
-        if (problem.problem_type === 'INTERVIEW' && userPoints < 10000 && !isAdmin) {
+        if (problem.is_interview && userPoints < 10000 && !isAdmin) {
             return res.status(403).json({ error: 'This problem is locked. You need 10,000 points to access Interview Questions.' });
         }
 

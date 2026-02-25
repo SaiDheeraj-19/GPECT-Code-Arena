@@ -62,7 +62,8 @@ export default function StudentDashboard() {
     };
 
     const filteredProblems = problems.filter(p => {
-        const matchesSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase());
+        const title = p.title || "Untitled Problem";
+        const matchesSearch = title.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesType = activeType === 'ALL' ||
             (activeType === 'INTERVIEW' ? p.is_interview : p.problem_type === activeType);
         return matchesSearch && matchesType;
