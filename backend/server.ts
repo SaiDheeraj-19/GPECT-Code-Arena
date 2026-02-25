@@ -30,7 +30,9 @@ import { pullDockerImages } from './dockerRunner/execute';
 // Import submission queue to start processing
 import './services/submissionQueue';
 
+console.log('[Startup] Loading environment variables...');
 dotenv.config();
+console.log('[Startup] Environment loaded.');
 
 const app = express();
 const server = http.createServer(app);
@@ -96,9 +98,10 @@ initWebSocket(server);
 // ── Start Server ──
 const PORT = process.env.PORT || 5000;
 
-server.listen(PORT, async () => {
+console.log(`[Startup] Attempting to listen on port ${PORT}...`);
+server.listen(Number(PORT), '0.0.0.0', async () => {
     console.log(`\n🚀 GPCET Coding Platform Backend v2.0.0`);
-    console.log(`   Server running on port ${PORT}`);
+    console.log(`   Server running on 0.0.0.0:${PORT}`);
     console.log(`   WebSocket enabled on /ws`);
     console.log(`   Environment: ${process.env.NODE_ENV || 'development'}\n`);
 
