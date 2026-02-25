@@ -75,6 +75,23 @@ export default function ProblemSolvePage() {
     const [newSolution, setNewSolution] = useState({ title: "", explanation: "", code: "" });
     const [showSolutionForm, setShowSolutionForm] = useState(false);
 
+    // Editor Settings
+    const [showEditorSettings, setShowEditorSettings] = useState(false);
+    const [editorConfig, setEditorConfig] = useState({
+        fontSize: 14,
+        theme: "vs-dark",
+        minimap: false,
+        wordWrap: "off" as "on" | "off"
+    });
+
+    const toggleFullscreen = () => {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(err => console.error(err));
+        } else {
+            if (document.exitFullscreen) document.exitFullscreen();
+        }
+    };
+
     const fetchLanguages = useCallback(async () => {
         try {
             const { data } = await api.get('/submissions/languages');
@@ -294,8 +311,8 @@ export default function ProblemSolvePage() {
                                         <div className="space-y-4">
                                             <div className="flex items-center justify-between">
                                                 <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full ${problem.difficulty === 'Easy' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' :
-                                                        problem.difficulty === 'Hard' ? 'bg-red-500/10 text-red-500 border border-red-500/20' :
-                                                            'bg-amber-500/10 text-amber-500 border border-amber-500/20'
+                                                    problem.difficulty === 'Hard' ? 'bg-red-500/10 text-red-500 border border-red-500/20' :
+                                                        'bg-amber-500/10 text-amber-500 border border-amber-500/20'
                                                     }`}>
                                                     {problem.difficulty}
                                                 </span>
@@ -436,25 +453,88 @@ export default function ProblemSolvePage() {
                                     <ChevronDown size={14} className="text-slate-500 -ml-1 pointer-events-none" />
                                 </div>
                                 <div className="h-4 w-px bg-white/10"></div>
-                                <button className="flex items-center gap-2 text-slate-500 hover:text-white transition-colors"><Settings size={14} /><span className="text-[10px] font-black uppercase tracking-widest">Settings</span></button>
+                                <button
+                                    onClick={() => setShowEditorSettings(!showEditorSettings)}
+                                    className={`flex items-center gap-2 transition-colors ${showEditorSettings ? 'text-amber-500' : 'text-slate-500 hover:text-white'}`}
+                                >
+                                    <Settings size={14} /><span className="text-[10px] font-black uppercase tracking-widest">Settings</span>
+                                </button>
                                 <button onClick={() => { const cfg = languages.find(l => l.id === language); if (cfg) setCode(cfg.boilerplate); }} className="flex items-center gap-2 text-slate-500 hover:text-white transition-colors"><RotateCcw size={14} /><span className="text-[10px] font-black uppercase tracking-widest">Reset</span></button>
                             </div>
                             <div className="flex items-center gap-3">
                                 {problem.problem_type === 'WEB_DEV' && <button className="flex items-center gap-2 bg-blue-500/10 text-blue-500 px-4 py-1.5 rounded-lg border border-blue-500/20 text-[10px] font-black uppercase tracking-widest hover:bg-blue-500 hover:text-white transition-all"><ExternalLink size={14} /> Live Preview</button>}
-                                <button className="p-2 text-slate-500 hover:text-white transition-colors" title="Full Screen"><Maximize size={16} /></button>
+                                <button onClick={toggleFullscreen} className="p-2 text-slate-500 hover:text-white transition-colors" title="Full Screen"><Maximize size={16} /></button>
                             </div>
                         </div>
+
+                        {/* Editor Settings Panel Overlay */}
+                        <AnimatePresence>
+                            {showEditorSettings && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                    className="absolute right-6 top-14 z-30 w-64 bg-[#1a1a1c] border border-white/10 rounded-2xl shadow-2xl p-4 space-y-4"
+                                >
+                                    <div className="flex items-center justify-between pointer-events-none">
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Editor Settings</span>
+                                        <Settings size={14} className="text-slate-500" />
+                                    </div>
+                                    <div className="space-y-3">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-xs font-bold text-slate-300">Theme</span>
+                                            <select
+                                                value={editorConfig.theme}
+                                                onChange={e => setEditorConfig({ ...editorConfig, theme: e.target.value })}
+                                                className="bg-black/50 border border-white/5 rounded px-2 py-1 text-xs text-white outline-none"
+                                            >
+                                                <option value="vs-dark">Dark</option>
+                                                <option value="light">Light</option>
+                                                <option value="hc-black">High Contrast</option>
+                                            </select>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-xs font-bold text-slate-300">Font Size</span>
+                                            <div className="flex items-center gap-2 bg-black/50 border border-white/5 rounded px-2 py-1">
+                                                <button onClick={() => setEditorConfig({ ...editorConfig, fontSize: Math.max(10, editorConfig.fontSize - 2) })} className="text-slate-400 hover:text-white transition-colors">-</button>
+                                                <span className="text-xs font-mono w-4 text-center">{editorConfig.fontSize}</span>
+                                                <button onClick={() => setEditorConfig({ ...editorConfig, fontSize: Math.min(32, editorConfig.fontSize + 2) })} className="text-slate-400 hover:text-white transition-colors">+</button>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-xs font-bold text-slate-300">Minimap</span>
+                                            <button
+                                                onClick={() => setEditorConfig({ ...editorConfig, minimap: !editorConfig.minimap })}
+                                                className={`text-xs font-bold px-2 py-1 rounded transition-colors ${editorConfig.minimap ? 'bg-amber-500 text-black' : 'bg-white/5 text-slate-400'}`}
+                                            >
+                                                {editorConfig.minimap ? 'ON' : 'OFF'}
+                                            </button>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-xs font-bold text-slate-300">Word Wrap</span>
+                                            <button
+                                                onClick={() => setEditorConfig({ ...editorConfig, wordWrap: editorConfig.wordWrap === 'on' ? 'off' : 'on' })}
+                                                className={`text-xs font-bold px-2 py-1 rounded transition-colors ${editorConfig.wordWrap === 'on' ? 'bg-amber-500 text-black' : 'bg-white/5 text-slate-400'}`}
+                                            >
+                                                {editorConfig.wordWrap === 'on' ? 'ON' : 'OFF'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
 
                         <div className="flex-1 overflow-hidden relative border-b border-white/5 bg-[#0a0a0b]">
                             <Editor
                                 height="100%"
                                 language={currentLangConfig?.monacoId || 'plaintext'}
-                                theme="vs-dark"
+                                theme={editorConfig.theme}
                                 value={code}
                                 onChange={val => setCode(val || "")}
                                 options={{
-                                    minimap: { enabled: false },
-                                    fontSize: 14,
+                                    minimap: { enabled: editorConfig.minimap },
+                                    fontSize: editorConfig.fontSize,
+                                    wordWrap: editorConfig.wordWrap,
                                     fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
                                     padding: { top: 20 },
                                     smoothScrolling: true,

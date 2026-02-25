@@ -1,16 +1,76 @@
 "use client";
 
-import { useState } from "react";
-import { User, Shield, Sliders, Bell, CreditCard, LogOut, Camera, Github, Linkedin } from "lucide-react";
+import { useState, useEffect } from "react";
+import { User, Shield, Sliders, Bell, CreditCard, LogOut, Camera, Github, Linkedin, Loader2, Check } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useAuthStore } from "../../store/auth";
 
 export default function SettingsPage() {
     const router = useRouter();
+    const { user, login, logout } = useAuthStore();
     const [activeTab, setActiveTab] = useState("Account");
 
     const [publicRanking, setPublicRanking] = useState(true);
     const [hiring, setHiring] = useState(false);
     const [experimental, setExperimental] = useState(true);
+
+    const [loading, setLoading] = useState(false);
+    const [success, setSuccess] = useState(false);
+
+    const [formData, setFormData] = useState({
+        name: "",
+        username: "",
+        bio: "",
+        portfolio_url: "",
+        avatar_url: ""
+    });
+
+    useEffect(() => {
+        if (!user) {
+            router.push('/login');
+        } else {
+            setFormData({
+                name: user.name || "",
+                username: user.username || "",
+                bio: user.bio || "",
+                portfolio_url: user.portfolio_url || "",
+                avatar_url: user.avatar_url || ""
+            });
+        }
+    }, [user, router]);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleSave = async () => {
+        setLoading(true);
+        setSuccess(false);
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/profile`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify(formData)
+            });
+            if (res.ok) {
+                const data = await res.json();
+                login(data.user, data.token);
+                setSuccess(true);
+                setTimeout(() => setSuccess(false), 3000);
+            } else {
+                const err = await res.json();
+                alert(err.error || "Failed to update profile");
+            }
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const sidebarItems = [
         { icon: User, label: "Account" },
@@ -42,8 +102,14 @@ export default function SettingsPage() {
                     <button className="text-slate-400 hover:text-white transition">
                         <Bell size={18} />
                     </button>
-                    <div className="size-8 rounded-full border-2 border-primary/50 overflow-hidden cursor-pointer" onClick={() => router.push('/settings')}>
-                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Alex" alt="User" />
+                    <div className="size-8 rounded-full border-2 border-primary/50 overflow-hidden cursor-pointer bg-slate-800" onClick={() => router.push('/settings')}>
+                        {user?.avatar_url ? (
+                            <img src={user.avatar_url} alt="User" className="w-full h-full object-cover" />
+                        ) : (
+                            <div className="w-full h-full flex items-center justify-center text-slate-400">
+                                <User size={16} />
+                            </div>
+                        )}
                     </div>
                 </div>
             </header>
@@ -79,7 +145,10 @@ export default function SettingsPage() {
 
                             <hr className="border-white/5 my-4" />
 
-                            <button className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all">
+                            <button
+                                onClick={() => { logout(); router.push('/'); }}
+                                className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                            >
                                 <LogOut size={18} className="text-slate-500 hover:text-red-400" />
                                 Sign Out
                             </button>
@@ -93,8 +162,12 @@ export default function SettingsPage() {
                         <div className="flex flex-col md:flex-row items-start md:items-center gap-6 mb-12">
                             <div className="relative">
                                 <div className="size-24 rounded-full border-2 border-primary p-1">
-                                    <div className="w-full h-full rounded-full overflow-hidden bg-white/5">
-                                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Alex" alt="Alex Chen" className="w-full h-full object-cover" />
+                                    <div className="w-full h-full rounded-full overflow-hidden bg-white/5 flex items-center justify-center">
+                                        {formData.avatar_url ? (
+                                            <img src={formData.avatar_url} alt={formData.name} className="w-full h-full object-cover" />
+                                        ) : (
+                                            <User size={32} className="text-slate-500" />
+                                        )}
                                     </div>
                                 </div>
                                 <button className="absolute bottom-0 right-0 size-8 bg-primary rounded-full text-background-dark flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
@@ -103,13 +176,21 @@ export default function SettingsPage() {
                             </div>
 
                             <div className="flex-1">
-                                <h2 className="text-2xl font-bold mb-1">Alex Chen</h2>
-                                <p className="text-slate-400 text-sm mb-4">Senior Software Engineer @ GPCET</p>
+                                <h2 className="text-2xl font-bold mb-1">{formData.name || 'Engineer'}</h2>
+                                <p className="text-slate-400 text-sm mb-4">{user?.roll_number ? `${user.roll_number} • ` : ''}GPCET</p>
                                 <div className="flex gap-3">
-                                    <button className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold rounded-lg transition-colors border border-white/5">
-                                        Change Avatar
-                                    </button>
-                                    <button className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-xs font-semibold rounded-lg transition-colors border border-red-500/10">
+                                    <input
+                                        type="text"
+                                        name="avatar_url"
+                                        placeholder="Avatar Image URL..."
+                                        value={formData.avatar_url}
+                                        onChange={handleChange}
+                                        className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-primary/50 flex-1 max-w-xs"
+                                    />
+                                    <button
+                                        onClick={() => setFormData({ ...formData, avatar_url: '' })}
+                                        className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-xs font-semibold rounded-lg transition-colors border border-red-500/10"
+                                    >
                                         Remove
                                     </button>
                                 </div>
@@ -122,7 +203,9 @@ export default function SettingsPage() {
                                 <label className="text-[10px] font-bold tracking-widest text-slate-500 uppercase">Full Name</label>
                                 <input
                                     type="text"
-                                    defaultValue="Alex Chen"
+                                    name="name"
+                                    value={formData.name}
+                                    onChange={handleChange}
                                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
                                 />
                             </div>
@@ -130,7 +213,33 @@ export default function SettingsPage() {
                                 <label className="text-[10px] font-bold tracking-widest text-slate-500 uppercase">Email Address</label>
                                 <input
                                     type="email"
-                                    defaultValue="alex.chen@gpcet.edu"
+                                    value={user?.email || ""}
+                                    disabled
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-slate-400 text-sm cursor-not-allowed opacity-70"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-6 mb-8">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-bold tracking-widest text-slate-500 uppercase">Username</label>
+                                <input
+                                    type="text"
+                                    name="username"
+                                    value={formData.username}
+                                    onChange={handleChange}
+                                    placeholder="your_handle"
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-bold tracking-widest text-slate-500 uppercase">Portfolio/GitHub URL</label>
+                                <input
+                                    type="text"
+                                    name="portfolio_url"
+                                    value={formData.portfolio_url}
+                                    onChange={handleChange}
+                                    placeholder="https://github.com/..."
                                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
                                 />
                             </div>
@@ -140,7 +249,10 @@ export default function SettingsPage() {
                             <label className="text-[10px] font-bold tracking-widest text-slate-500 uppercase">Bio</label>
                             <textarea
                                 rows={3}
-                                defaultValue="Full-stack enthusiast passionate about clean code and high-performance algorithms."
+                                name="bio"
+                                value={formData.bio}
+                                onChange={handleChange}
+                                placeholder="Tell us about yourself..."
                                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all resize-none"
                             ></textarea>
                         </div>
@@ -235,10 +347,20 @@ export default function SettingsPage() {
 
                         {/* Form Actions */}
                         <div className="flex items-center justify-end gap-6 pt-6 mt-8">
+                            {success && (
+                                <span className="flex items-center gap-2 text-emerald-500 text-sm font-bold">
+                                    <Check size={16} /> Saved Successfully
+                                </span>
+                            )}
                             <button className="text-sm font-bold text-slate-400 hover:text-white transition-colors">
                                 Discard
                             </button>
-                            <button className="px-6 py-3 bg-primary text-background-dark font-bold text-sm rounded-xl shadow-lg shadow-primary/20 hover:opacity-90 transition-all active:scale-[0.98]">
+                            <button
+                                onClick={handleSave}
+                                disabled={loading}
+                                className="px-6 py-3 bg-primary text-background-dark font-bold text-sm rounded-xl shadow-lg shadow-primary/20 hover:opacity-90 transition-all active:scale-[0.98] flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                            >
+                                {loading && <Loader2 size={16} className="animate-spin" />}
                                 Save Changes
                             </button>
                         </div>

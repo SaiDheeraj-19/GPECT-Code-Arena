@@ -7,17 +7,23 @@ import { useRouter } from "next/navigation";
 import { Navbar } from "../components/Navbar";
 import { Footer } from "../components/Footer";
 import Image from "next/image";
+import { useAuthStore } from "../store/auth";
 
 export default function LandingPage() {
     const router = useRouter();
+    const { user } = useAuthStore();
     const [animationKey, setAnimationKey] = useState(0);
 
     useEffect(() => {
+        if (user) {
+            router.push('/problems');
+        }
+
         const interval = setInterval(() => {
             setAnimationKey(prev => prev + 1);
         }, 4000); // Replay timelapse loop every 4 seconds
         return () => clearInterval(interval);
-    }, []);
+    }, [user, router]);
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-[#0a0a0b] text-slate-900 dark:text-slate-100 font-display selection:bg-primary selection:text-white dark:selection:text-background-dark overflow-x-hidden transition-colors duration-500">
