@@ -1,0 +1,171 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    /* Pure white */
+    --foreground: 220 50% 10%;
+    /* Deep navy text */
+    --card: 0 0% 100%;
+    --card-foreground: 220 50% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 50% 10%;
+    --primary: 142 71% 45%;
+    /* Neon green remains */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 30% 96%;
+    /* Very light gray/navy */
+    --secondary-foreground: 220 50% 10%;
+    --muted: 220 30% 96%;
+    --muted-foreground: 220 20% 45%;
+    --accent: 142 71% 45%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 30% 90%;
+    --input: 220 30% 90%;
+    --ring: 142 71% 45%;
+    --radius: 1rem;
+  }
+
+  .dark {
+    --background: 220 50% 10%;
+    /* Deep navy background */
+    --foreground: 0 0% 100%;
+    --card: 220 50% 15%;
+    --card-foreground: 0 0% 100%;
+    --popover: 220 50% 15%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 142 71% 45%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 30% 25%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 220 30% 25%;
+    --muted-foreground: 220 20% 70%;
+    --accent: 142 71% 45%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 30% 25%;
+    --input: 220 30% 25%;
+    --ring: 142 71% 45%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+.glassmorphism {
+  @apply bg-white/5 backdrop-blur-md border border-white/10;
+}
+
+/* Custom UI Additions for Problem Workspace & Landing Page */
+.glass-sidebar {
+  background: hsla(var(--background), 0.7);
+  backdrop-filter: blur(20px);
+  border-right: 1px solid hsla(var(--border), 1);
+}
+
+.dark .glass-sidebar {
+  background: rgba(26, 26, 26, 0.7);
+}
+
+.editor-bg {
+  background-color: var(--card);
+}
+
+.dark .editor-bg {
+  background-color: #0d0d0d;
+}
+
+.syntax-keyword {
+  color: #ff7b72;
+}
+
+.syntax-func {
+  color: #d2a8ff;
+}
+
+.syntax-string {
+  color: #a5d6ff;
+}
+
+.syntax-comment {
+  color: #8b949e;
+}
+
+.syntax-number {
+  color: #f2cc60;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+.mac-button {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mac-button:active {
+  transform: scale(0.96);
+}
+
+.glass-nav {
+  background: hsla(var(--background), 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid hsla(var(--foreground), 0.1);
+}
+
+.dark .glass-nav {
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-card {
+  background: hsla(var(--foreground), 0.03);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid hsla(var(--foreground), 0.05);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+  background: hsla(var(--foreground), 0.06);
+  transform: translateY(-4px);
+  border-color: hsla(var(--primary), 0.5);
+}
+
+.mesh-gradient {
+  background-color: hsla(var(--background), 1);
+  background-image:
+    radial-gradient(at 0% 0%, hsla(var(--primary), 0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, hsla(var(--secondary), 0.4) 0px, transparent 50%),
+    radial-gradient(at 50% 100%, hsla(var(--primary), 0.05) 0px, transparent 50%);
+}
+
+.hero-text-glow {
+  text-shadow: 0 0 40px rgba(201, 163, 38, 0.2);
+}
+
+.inner-glow {
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4);
+}
