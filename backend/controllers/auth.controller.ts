@@ -158,40 +158,43 @@ export const login = async (req: Request, res: Response) => {
             });
         }
 
+        // Generate token with COMPLETE profile info so it persists across logouts
+        const tokenData = {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            roll_number: user.roll_number,
+            username: user.username,
+            bio: user.bio,
+            portfolio_url: user.portfolio_url,
+            avatar_url: user.avatar_url,
+            role: user.role,
+            must_change_password: user.must_change_password,
+            // @ts-ignore
+            is_profile_complete: user.is_profile_complete,
+            // @ts-ignore
+            points: user.points,
+            // @ts-ignore
+            streak: user.streak,
+            // @ts-ignore
+            year: user.year,
+            // @ts-ignore
+            semester: user.semester,
+            // @ts-ignore
+            branch: user.branch,
+            // @ts-ignore
+            section: user.section
+        };
+
         const token = jwt.sign(
-            {
-                id: user.id,
-                email: user.email,
-                roll_number: user.roll_number,
-                role: user.role,
-                must_change_password: user.must_change_password,
-                // @ts-ignore
-                is_profile_complete: user.is_profile_complete,
-                // @ts-ignore
-                points: user.points,
-                // @ts-ignore
-                streak: user.streak
-            },
+            tokenData,
             process.env.JWT_SECRET || 'your_jwt_secret_here',
             { expiresIn: '1d' }
         );
 
         res.json({
             token,
-            user: {
-                id: user.id,
-                name: user.name,
-                email: user.email,
-                roll_number: user.roll_number,
-                role: user.role,
-                must_change_password: user.must_change_password,
-                // @ts-ignore
-                is_profile_complete: user.is_profile_complete,
-                // @ts-ignore
-                points: user.points,
-                // @ts-ignore
-                streak: user.streak
-            }
+            user: tokenData
         });
 
     } catch (error) {
@@ -271,8 +274,35 @@ export const resetPassword = async (req: Request, res: Response) => {
             }
         });
 
+        const tokenData = {
+            id: updatedUser.id,
+            name: updatedUser.name,
+            email: updatedUser.email,
+            roll_number: updatedUser.roll_number,
+            username: updatedUser.username,
+            bio: updatedUser.bio,
+            portfolio_url: updatedUser.portfolio_url,
+            avatar_url: updatedUser.avatar_url,
+            role: updatedUser.role,
+            must_change_password: updatedUser.must_change_password,
+            // @ts-ignore
+            is_profile_complete: updatedUser.is_profile_complete,
+            // @ts-ignore
+            points: updatedUser.points,
+            // @ts-ignore
+            streak: updatedUser.streak,
+            // @ts-ignore
+            year: updatedUser.year,
+            // @ts-ignore
+            semester: updatedUser.semester,
+            // @ts-ignore
+            branch: updatedUser.branch,
+            // @ts-ignore
+            section: updatedUser.section
+        };
+
         const token = jwt.sign(
-            { id: updatedUser.id, email: updatedUser.email, roll_number: updatedUser.roll_number, role: updatedUser.role, must_change_password: updatedUser.must_change_password },
+            tokenData,
             process.env.JWT_SECRET || 'your_jwt_secret_here',
             { expiresIn: '1d' }
         );
@@ -280,14 +310,7 @@ export const resetPassword = async (req: Request, res: Response) => {
         res.json({
             message: 'Password updated successfully',
             token,
-            user: {
-                id: updatedUser.id,
-                name: updatedUser.name,
-                email: updatedUser.email,
-                roll_number: updatedUser.roll_number,
-                role: updatedUser.role,
-                must_change_password: updatedUser.must_change_password
-            }
+            user: tokenData
         });
     } catch (error) {
         console.error('Password reset error:', error);

@@ -6,13 +6,14 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import api from "../../lib/api";
 import { useAuthStore } from "../../store/auth";
-import { ShieldCheck, AlertCircle } from "lucide-react";
+import { ShieldCheck, AlertCircle, Eye, EyeOff } from "lucide-react";
 
 export default function ResetPasswordPage() {
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     const router = useRouter();
     const user = useAuthStore((state) => state.user);
@@ -87,27 +88,38 @@ export default function ResetPasswordPage() {
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
                         <label className="block text-sm font-medium mb-1.5 text-gray-300">New Password</label>
-                        <input
-                            type="password"
-                            required
-                            value={newPassword}
-                            onChange={(e) => setNewPassword(e.target.value)}
-                            className="w-full bg-[#1e293b]/50 border border-white/5 rounded-xl px-4 py-3.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-gray-600"
-                            placeholder="Strong Password"
-                        />
+                        <div className="relative group/input">
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                required
+                                value={newPassword}
+                                onChange={(e) => setNewPassword(e.target.value)}
+                                className="w-full bg-[#1e293b]/50 border border-white/5 rounded-xl px-4 py-3.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-gray-600 pr-12"
+                                placeholder="Strong Password"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-white transition-colors"
+                            >
+                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            </button>
+                        </div>
                         <p className="text-[10px] text-gray-500 mt-2 leading-tight">Must contain 1 uppercase, 1 lowercase, 1 number, and 1 special character (@$!%*?&). Min length 8.</p>
                     </div>
 
                     <div>
                         <label className="block text-sm font-medium mb-1.5 text-gray-300">Confirm Password</label>
-                        <input
-                            type="password"
-                            required
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            className="w-full bg-[#1e293b]/50 border border-white/5 rounded-xl px-4 py-3.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-gray-600"
-                            placeholder="Confirm Password"
-                        />
+                        <div className="relative group/input">
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                required
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                className="w-full bg-[#1e293b]/50 border border-white/5 rounded-xl px-4 py-3.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-gray-600 pr-12"
+                                placeholder="Confirm Password"
+                            />
+                        </div>
                     </div>
 
                     <button

@@ -32,6 +32,7 @@ export default function ProfilePage() {
     const [recentProblems, setRecentProblems] = useState<any[]>([]);
     const [certificates, setCertificates] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState<'monthly' | 'all'>('all');
 
     useEffect(() => {
         if (!user) {
@@ -179,9 +180,9 @@ export default function ProfilePage() {
 
                         {/* Quick Metrics */}
                         <div className="grid grid-cols-1 gap-4">
-                            <StatPill icon={TrendingUp} label="Acceptance" value="94.2%" color="text-blue-400" bg="bg-blue-400/10" dot="bg-blue-400" />
-                            <StatPill icon={Star} label="Global Rank" value={`#${Math.floor(Math.random() * 50) + 1}`} color="text-amber-400" bg="bg-amber-400/10" dot="bg-amber-400" />
-                            <StatPill icon={Activity} label="Arena Level" value="Level 14" color="text-primary" bg="bg-primary/10" dot="bg-primary" />
+                            <StatPill icon={TrendingUp} label="Acceptance" value={stats.totalSolved > 0 ? "100%" : "0.0%"} color="text-blue-400" bg="bg-blue-400/10" dot="bg-blue-400" />
+                            <StatPill icon={Star} label="Global Rank" value="Unranked" color="text-amber-400" bg="bg-amber-400/10" dot="bg-amber-400" />
+                            <StatPill icon={Activity} label="Arena Level" value={`Level ${Math.floor(stats.totalSolved / 5) + 1}`} color="text-primary" bg="bg-primary/10" dot="bg-primary" />
                         </div>
                     </div>
 
@@ -199,17 +200,27 @@ export default function ProfilePage() {
                                     <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-primary mb-2">Performance Matrix</h3>
                                     <h4 className="text-3xl font-black tracking-tighter">MISSION LOGS</h4>
                                 </div>
-                                <div className="flex gap-2">
-                                    <div className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-[10px] font-black uppercase text-slate-400">Monthly</div>
-                                    <div className="px-4 py-2 rounded-xl bg-primary text-background-dark text-[10px] font-black uppercase">All Time</div>
+                                <div className="flex gap-2 bg-black/20 p-1.5 rounded-2xl border border-white/5">
+                                    <button
+                                        onClick={() => setActiveTab('monthly')}
+                                        className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${activeTab === 'monthly' ? 'bg-primary text-background-dark shadow-lg shadow-primary/20' : 'text-slate-500 hover:text-white'}`}
+                                    >
+                                        Monthly
+                                    </button>
+                                    <button
+                                        onClick={() => setActiveTab('all')}
+                                        className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${activeTab === 'all' ? 'bg-primary text-background-dark shadow-lg shadow-primary/20' : 'text-slate-500 hover:text-white'}`}
+                                    >
+                                        All Time
+                                    </button>
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-                                <BigMetric label="Total Solved" value={stats.totalSolved} sub="Missions" />
-                                <BigMetric label="Easy" value={stats.easy} sub="Scout" color="text-emerald-500" />
-                                <BigMetric label="Medium" value={stats.medium} sub="Combat" color="text-amber-500" />
-                                <BigMetric label="Hard" value={stats.hard} sub="Elite" color="text-rose-500" />
+                                <BigMetric label="Total Solved" value={activeTab === 'all' ? stats.totalSolved : 0} sub="Missions" />
+                                <BigMetric label="Easy" value={activeTab === 'all' ? stats.easy : 0} sub="Scout" color="text-emerald-500" />
+                                <BigMetric label="Medium" value={activeTab === 'all' ? stats.medium : 0} sub="Combat" color="text-amber-500" />
+                                <BigMetric label="Hard" value={activeTab === 'all' ? stats.hard : 0} sub="Elite" color="text-rose-500" />
                             </div>
 
                             {/* Visual Progress Bar */}

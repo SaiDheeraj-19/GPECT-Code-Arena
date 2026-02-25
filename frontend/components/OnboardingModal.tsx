@@ -9,6 +9,8 @@ export function OnboardingModal() {
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         name: user?.name === 'Coder' ? '' : (user?.name || ''),
+        username: user?.username || "",
+        avatar_url: user?.avatar_url || "",
         year: "",
         semester: "",
         branch: "",
@@ -109,6 +111,18 @@ export function OnboardingModal() {
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1">
+                            <label className="text-[10px] font-bold tracking-widest text-slate-500 uppercase">Username</label>
+                            <input
+                                type="text"
+                                name="username"
+                                required
+                                value={formData.username}
+                                onChange={handleChange}
+                                placeholder="msi_warrior"
+                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                            />
+                        </div>
+                        <div className="space-y-1">
                             <label className="text-[10px] font-bold tracking-widest text-slate-500 uppercase">Branch</label>
                             <select
                                 name="branch"
@@ -126,6 +140,21 @@ export function OnboardingModal() {
                                 <option value="AI">AI</option>
                             </select>
                         </div>
+                    </div>
+
+                    <div className="space-y-1">
+                        <label className="text-[10px] font-bold tracking-widest text-slate-500 uppercase">Profile Photo URL</label>
+                        <input
+                            type="url"
+                            name="avatar_url"
+                            value={formData.avatar_url}
+                            onChange={handleChange}
+                            placeholder="https://example.com/photo.jpg"
+                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1">
                             <label className="text-[10px] font-bold tracking-widest text-slate-500 uppercase">Section</label>
                             <input
